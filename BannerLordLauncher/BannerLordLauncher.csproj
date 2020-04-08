@@ -6,6 +6,13 @@
     <TieredCompilation>false</TieredCompilation>
     <PublishReadyToRun>false</PublishReadyToRun>
     <TieredCompilationQuickJit>false</TieredCompilationQuickJit>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>true</PublishTrimmed>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
