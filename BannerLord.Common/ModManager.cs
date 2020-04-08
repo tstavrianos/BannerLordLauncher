@@ -36,6 +36,7 @@ namespace BannerLord.Common
                     modules.Remove(module);
                     var modEntry = new ModEntry {Module = module, UserModData = mod};
                     this.Mods.Add(modEntry);
+                    if (modEntry.Module?.Official == true) modEntry.IsChecked = true;
                 }
             }
 
@@ -43,6 +44,7 @@ namespace BannerLord.Common
             {
                 var modEntry = new ModEntry {Module = module, UserModData = new UserModData(module.Id, false)};
                 this.Mods.Add(modEntry);
+                if (modEntry.Module?.Official == true) modEntry.IsChecked = true;
             }
             
             this._runValidation = true;
@@ -153,7 +155,7 @@ namespace BannerLord.Common
         public void CheckAll()
         {
             this._runValidation = false;
-            foreach (var modEntry in this.Mods)
+            foreach (var modEntry in this.Mods.Where(x => x.IsCheckboxEnabled))
             {
                 modEntry.IsChecked = true;
             }
@@ -164,7 +166,7 @@ namespace BannerLord.Common
         public void UncheckAll()
         {
             this._runValidation = false;
-            foreach (var modEntry in this.Mods)
+            foreach (var modEntry in this.Mods.Where(x => x.IsCheckboxEnabled))
             {
                 modEntry.IsChecked = false;
             }
@@ -175,7 +177,7 @@ namespace BannerLord.Common
         public void InvertCheck()
         {
             this._runValidation = false;
-            foreach (var modEntry in this.Mods)
+            foreach (var modEntry in this.Mods.Where(x => x.IsCheckboxEnabled))
             {
                 modEntry.IsChecked = !modEntry.IsChecked;
             }
