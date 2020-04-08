@@ -13,15 +13,17 @@ namespace BannerLordLauncher.Views
     {
         internal AppConfig Configuration { get; }
         public MainWindowViewModel ViewModel => this.DataContext as MainWindowViewModel;
+        private readonly string _configurationFilePath;
 
         public MainWindow()
         {
+            this._configurationFilePath = Path.Combine(GetApplicationRoot(), "configuration.json");
             try
             {
-                if (File.Exists("configuration.json"))
+                if (File.Exists(this._configurationFilePath))
                 {
                     this.Configuration =
-                        JsonConvert.DeserializeObject<AppConfig>(File.ReadAllText("configuration.json"));
+                        JsonConvert.DeserializeObject<AppConfig>(File.ReadAllText(this._configurationFilePath));
                 }
             }
             catch
@@ -38,6 +40,11 @@ namespace BannerLordLauncher.Views
             this.DataContext = model;
             model.Initialize();
         }
+        
+        private static string GetApplicationRoot()
+        {
+            return Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+        }
 
         public void StartDrag(object sender, PointerPressedEventArgs e) => this.ViewModel.StartDrag(sender, e);
 
@@ -53,7 +60,7 @@ namespace BannerLordLauncher.Views
         protected override void OnClosed(EventArgs e)
         {
             var settings = new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, Formatting = Formatting.Indented};
-            File.WriteAllText("configuration.json", JsonConvert.SerializeObject(this.Configuration, settings));
+            File.WriteAllText(this._configurationFilePath, JsonConvert.SerializeObject(this.Configuration, settings));
 
             base.OnClosed(e);
         }
