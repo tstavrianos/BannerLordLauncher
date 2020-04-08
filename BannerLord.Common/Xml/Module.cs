@@ -30,7 +30,7 @@ namespace BannerLord.Common.Xml
             var file = Path.Combine(gamePath, "Modules", directoryName, "SubModule.xml");
             if (!File.Exists(file))
             {
-                manager.Log().Warn($"File {file} does not exists");
+                manager.Log().Warn($"File {file} does not exist");
                 return null;
             }
             

@@ -23,7 +23,7 @@ namespace BannerLord.Common.Xml
         {
             if (!File.Exists(file))
             {
-                manager.Log().Warn($"File {file} does not exist.");
+                manager.Log().Warn($"File {file} does not exist");
                 return null;
             }
             var xmlSerializer = new XmlSerializer(typeof(UserData));
