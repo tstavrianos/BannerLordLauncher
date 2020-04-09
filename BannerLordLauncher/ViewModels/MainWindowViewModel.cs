@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -77,6 +78,7 @@ namespace BannerLordLauncher.ViewModels
             this.InvertCheck = ReactiveCommand.Create(() => this.Manager.InvertCheck());
             this.ValidateCommand = ReactiveCommand.Create(() => this.Manager.Validate(), validate.Select(x => x));
             this.Run = ReactiveCommand.Create(() => this.Manager.RunGame());
+            this.Config = ReactiveCommand.Create(() => this.Manager.OpenConfig());
         }
 
         public async void Initialize()
@@ -115,9 +117,10 @@ namespace BannerLordLauncher.ViewModels
         {
             while (true)
             {
-                var dialog = new OpenFolderDialog {Title = "Select game folder",};
+                var dialog = new OpenFolderDialog {Title = "Select game root folder",};
                 var result = await dialog.ShowAsync(this._window);
-                if (result is null || !Directory.Exists(result) || !File.Exists(Path.Combine(result, "bin", "Win64_Shipping_Client", "Bannerlord.exe"))) continue;
+                if(result is null) Environment.Exit(0);
+                if (!Directory.Exists(result) || !File.Exists(Path.Combine(result, "bin", "Win64_Shipping_Client", "Bannerlord.exe"))) continue;
                 return result;
             }
         }
@@ -165,6 +168,7 @@ namespace BannerLordLauncher.ViewModels
         
         // ReSharper disable MemberCanBePrivate.Global
         // ReSharper disable UnusedAutoPropertyAccessor.Global
+        public ICommand Config { get; }
         public ICommand Run { get; }
         public ICommand Save { get; }
         public ICommand AlphaSort { get; }

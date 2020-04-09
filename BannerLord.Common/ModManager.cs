@@ -22,6 +22,7 @@ namespace BannerLord.Common
         {
             this._runValidation = false;
             this._basePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\Mount and Blade II Bannerlord\\Configs\\";
+            if (!Directory.Exists(this._basePath)) Directory.CreateDirectory(this._basePath);
             var launcherData = UserData.Load(this, Path.Combine(this._basePath, "LauncherData.xml")) ?? new UserData();
             this._gameExe = Path.Combine(game, "bin", "Win64_Shipping_Client", "Bannerlord.exe");
             var modulesFolder = Path.Combine(game, "Modules");
@@ -88,6 +89,19 @@ namespace BannerLord.Common
             Thread.Sleep(TimeSpan.FromSeconds(5));
             Environment.Exit(0);
         }
+        
+        public void OpenConfig()
+        {
+            if (string.IsNullOrEmpty(this._basePath) || !Directory.Exists(this._basePath)) return;
+            var info = new ProcessStartInfo
+            {
+                Arguments = this._basePath,
+                FileName = "explorer.exe",
+                WorkingDirectory = this._basePath,
+                UseShellExecute = false
+            };
+            Process.Start(info);
+        }
         public void Save()
         {
             var launcherDataFile = Path.Combine(this._basePath, "LauncherData.xml");
@@ -126,28 +140,28 @@ namespace BannerLord.Common
 
         public void MoveToTop(int selectedIndex)
         {
-            if (selectedIndex <= 0 || this.Mods.Count <= selectedIndex) return;
+            if (selectedIndex <= 0 || selectedIndex >= this.Mods.Count) return;
             this.Mods.Move(selectedIndex, 0);
             if (this.AutomaticValidation) this.Validate();
         }
 
         public void MoveUp(int selectedIndex)
         {
-            if (selectedIndex <= 0 || this.Mods.Count <= selectedIndex) return;
+            if (selectedIndex <= 0 || selectedIndex >= this.Mods.Count) return;
             this.Mods.Move(selectedIndex, selectedIndex - 1);
             if (this.AutomaticValidation) this.Validate();
         }
 
         public void MoveDown(int selectedIndex)
         {
-            if (selectedIndex <= 0 || this.Mods.Count <= selectedIndex + 1) return;
+            if (selectedIndex < 0 || selectedIndex >= this.Mods.Count - 1) return;
             this.Mods.Move(selectedIndex, selectedIndex + 1);
             if (this.AutomaticValidation) this.Validate();
         }
 
         public void MoveToBottom(int selectedIndex)
         {
-            if (selectedIndex <= 0 || this.Mods.Count <= selectedIndex + 1) return;
+            if (selectedIndex < 0 || selectedIndex >= this.Mods.Count - 1) return;
             this.Mods.Move(selectedIndex, this.Mods.Count - 1);
             if (this.AutomaticValidation) this.Validate();
         }

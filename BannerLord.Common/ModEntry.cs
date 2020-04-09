@@ -39,8 +39,6 @@ namespace BannerLord.Common
 
         public bool IsCheckboxEnabled => this._module?.Official == false && this._module?.SingleplayerModule == true;
 
-        public string CheckBoxTooltip => this._module?.Official == true ? "Official module" :
-            this._module?.SingleplayerModule != true ? "Not a single player module" : "Nothing to see here, move along";
         public Module Module
         {
             get => this._module;
