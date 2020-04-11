@@ -4,9 +4,9 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using BannerLordLauncher.ViewModels;
+using BannerLordLauncher.Avalonia.ViewModels;
 
-namespace BannerLordLauncher
+namespace BannerLordLauncher.Avalonia
 {
     public sealed class ViewLocator : IDataTemplate
     {

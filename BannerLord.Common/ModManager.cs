@@ -13,10 +13,8 @@ namespace BannerLord.Common
     {
         public ObservableCollection<ModEntry> Mods { get; } = new ObservableCollection<ModEntry>();
         private string _basePath;
-        public bool AutomaticValidation { get; set; }
         private bool _runValidation;
         private string _gameExe;
-        public bool AutoBackup { get; set; }
 
         public void Initialize(string game)
         {
@@ -35,7 +33,7 @@ namespace BannerLord.Common
                     var module = modules.FirstOrDefault(x => x.Id == mod.Id);
                     if (module == null) continue;
                     modules.Remove(module);
-                    var modEntry = new ModEntry {Module = module, UserModData = mod};
+                    var modEntry = new ModEntry { Module = module, UserModData = mod };
                     this.Mods.Add(modEntry);
                     if (modEntry.Module?.Official == true) modEntry.IsChecked = true;
                 }
@@ -43,17 +41,17 @@ namespace BannerLord.Common
 
             foreach (var module in modules)
             {
-                var modEntry = new ModEntry {Module = module, UserModData = new UserModData(module.Id, false)};
+                var modEntry = new ModEntry { Module = module, UserModData = new UserModData(module.Id, false) };
                 this.Mods.Add(modEntry);
                 if (modEntry.Module?.Official == true) modEntry.IsChecked = true;
             }
-            
+
             this._runValidation = true;
             this.Validate();
         }
-        
+
         private string EnabledMods() => "_MODULES_" + string.Join("", this.Mods.Where(x => x.UserModData.IsSelected).Select(x => "*" + x.Module.Id)) + "*_MODULES_";
-        
+
         private string GameArguments() => $"/singleplayer {this.EnabledMods()}";
 
         private static void BackupFile(string file)
@@ -77,7 +75,6 @@ namespace BannerLord.Common
         public void RunGame()
         {
             if (string.IsNullOrEmpty(this._gameExe)) return;
-            this.Save();
             var info = new ProcessStartInfo
             {
                 Arguments = this.GameArguments(),
@@ -89,7 +86,7 @@ namespace BannerLord.Common
             Thread.Sleep(TimeSpan.FromSeconds(5));
             Environment.Exit(0);
         }
-        
+
         public void OpenConfig()
         {
             if (string.IsNullOrEmpty(this._basePath) || !Directory.Exists(this._basePath)) return;
@@ -106,13 +103,13 @@ namespace BannerLord.Common
         {
             var launcherDataFile = Path.Combine(this._basePath, "LauncherData.xml");
             var launcherData = UserData.Load(this, launcherDataFile) ?? new UserData();
-            if(launcherData.SingleplayerData == null) launcherData.SingleplayerData = new UserGameTypeData();
+            if (launcherData.SingleplayerData == null) launcherData.SingleplayerData = new UserGameTypeData();
             launcherData.SingleplayerData.ModDatas.Clear();
             foreach (var mod in this.Mods)
             {
                 launcherData.SingleplayerData.ModDatas.Add(mod.UserModData);
             }
-            if(this.AutoBackup) BackupFile(launcherDataFile);
+            BackupFile(launcherDataFile);
             launcherData.Save(launcherDataFile);
         }
 
@@ -126,7 +123,7 @@ namespace BannerLord.Common
                 this.Mods.Add(item);
             }
             this._runValidation = true;
-            if (this.AutomaticValidation) this.Validate();
+            this.Validate();
         }
 
         public void ReverseOrder()
@@ -135,35 +132,35 @@ namespace BannerLord.Common
             for (var i = 0; i < this.Mods.Count; i++)
                 this.Mods.Move(this.Mods.Count - 1, i);
             this._runValidation = true;
-            if (this.AutomaticValidation) this.Validate();
+            this.Validate();
         }
 
         public void MoveToTop(int selectedIndex)
         {
             if (selectedIndex <= 0 || selectedIndex >= this.Mods.Count) return;
             this.Mods.Move(selectedIndex, 0);
-            if (this.AutomaticValidation) this.Validate();
+            this.Validate();
         }
 
         public void MoveUp(int selectedIndex)
         {
             if (selectedIndex <= 0 || selectedIndex >= this.Mods.Count) return;
             this.Mods.Move(selectedIndex, selectedIndex - 1);
-            if (this.AutomaticValidation) this.Validate();
+            this.Validate();
         }
 
         public void MoveDown(int selectedIndex)
         {
             if (selectedIndex < 0 || selectedIndex >= this.Mods.Count - 1) return;
             this.Mods.Move(selectedIndex, selectedIndex + 1);
-            if (this.AutomaticValidation) this.Validate();
+            this.Validate();
         }
 
         public void MoveToBottom(int selectedIndex)
         {
             if (selectedIndex < 0 || selectedIndex >= this.Mods.Count - 1) return;
             this.Mods.Move(selectedIndex, this.Mods.Count - 1);
-            if (this.AutomaticValidation) this.Validate();
+            this.Validate();
         }
 
         public void CheckAll()
@@ -174,7 +171,7 @@ namespace BannerLord.Common
                 modEntry.IsChecked = true;
             }
             this._runValidation = true;
-            if (this.AutomaticValidation) this.Validate();
+            this.Validate();
         }
 
         public void UncheckAll()
@@ -185,7 +182,7 @@ namespace BannerLord.Common
                 modEntry.IsChecked = false;
             }
             this._runValidation = true;
-            if (this.AutomaticValidation) this.Validate();
+            this.Validate();
         }
 
         public void InvertCheck()
@@ -196,7 +193,7 @@ namespace BannerLord.Common
                 modEntry.IsChecked = !modEntry.IsChecked;
             }
             this._runValidation = true;
-            if (this.AutomaticValidation) this.Validate();
+            this.Validate();
         }
 
         public void TopologicalSort()
@@ -221,7 +218,7 @@ namespace BannerLord.Common
             if (!this._runValidation) return;
             foreach (var entry in this.Mods)
             {
-                if(entry.LoadOrderConflicts == null) entry.LoadOrderConflicts = new ObservableCollection<LoadOrderConflict>();
+                if (entry.LoadOrderConflicts == null) entry.LoadOrderConflicts = new ObservableCollection<LoadOrderConflict>();
                 entry.LoadOrderConflicts.Clear();
             }
 

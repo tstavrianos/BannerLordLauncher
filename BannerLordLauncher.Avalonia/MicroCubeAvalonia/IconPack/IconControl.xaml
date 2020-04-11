@@ -1,7 +1,7 @@
 ﻿<Styles
   xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:iconPack="clr-namespace:BannerLordLauncher.MicroCubeAvalonia.IconPack">
+        xmlns:iconPack="clr-namespace:BannerLordLauncher.Avalonia.MicroCubeAvalonia.IconPack">
   <Design.PreviewWith>
     <Border Padding="20">
       <iconPack:IconControl Width="20" Height="20" Background="Red" Foreground="Blue" Kind="PackIconEntypoKind.Calendar" />

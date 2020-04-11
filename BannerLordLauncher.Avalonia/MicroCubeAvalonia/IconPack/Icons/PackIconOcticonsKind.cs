@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace BannerLordLauncher.MicroCubeAvalonia.IconPack.Icons
+namespace BannerLordLauncher.Avalonia.MicroCubeAvalonia.IconPack.Icons
 {
     /// ******************************************
     /// This code is auto generated. Do not amend.

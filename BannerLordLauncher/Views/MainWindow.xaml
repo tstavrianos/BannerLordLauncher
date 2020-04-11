@@ -1,161 +1,111 @@
-<Window xmlns="https://github.com/avaloniaui" 
+﻿<Window x:Class="BannerLordLauncher.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:iconPack="clr-namespace:BannerLordLauncher.MicroCubeAvalonia.IconPack"
+        xmlns:local="clr-namespace:BannerLordLauncher.Views"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         xmlns:common="clr-namespace:BannerLord.Common;assembly=BannerLord.Common"
-        mc:Ignorable="d" 
-        d:DesignWidth="400" d:DesignHeight="450" 
-        x:Class="BannerLordLauncher.Views.MainWindow" 
-        Icon="/Assets/avalonia-logo.ico" 
-        Title="BannerLord Launcher" 
-        Width="400" Height="450">
-    <DockPanel>
-        <StackPanel DockPanel.Dock="Left" Orientation="Vertical">
-            <Button Focusable="False" Name="MoveToTop" HorizontalContentAlignment="Left" Command="{Binding MoveToTop}" ClickMode="Release" ToolTip.Tip="Move selection to top">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.ChevronDoubleUp" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="To Top"/>
-                </StackPanel>
+        xmlns:controls="clr-namespace:BannerLordLauncher.Controls"
+        xmlns:dd="urn:gong-wpf-dragdrop"
+        xmlns:viewModels="clr-namespace:BannerLordLauncher.ViewModels"
+        mc:Ignorable="d"
+        Title="BannerLord Mod Launcher" Height="730" Width="604" d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}" ResizeMode="CanMinimize" Icon="/Assets/BLLicon.ico">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Dictionary.xaml"></ResourceDictionary>
+                <ResourceDictionary Source="/Scrollbar.xaml"></ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+
+    </Window.Resources>
+    <DockPanel Background="{DynamicResource StackPanelBackground1}">
+        <StackPanel DockPanel.Dock="Left" Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Center" RenderTransformOrigin="0.534,0.517">
+            <Button Style="{StaticResource MoveBtn}" Name="MoveToTop" Command="{Binding MoveToTop}" ClickMode="Release" ToolTip="Move selection to top" Margin="5,2,2,1">
+                <iconPacks:PackIconMaterial Kind="ChevronDoubleUp" Width="32" Height="32"/>
             </Button>
-            <Button Focusable="False" Name="MoveUp" HorizontalContentAlignment="Left" Command="{Binding MoveUp}" ClickMode="Release" ToolTip.Tip="Move selection up">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.ChevronUp" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="Up"/>
-                </StackPanel>
+            <Button Style="{StaticResource MoveBtn}" Name="MoveUp" Command="{Binding MoveUp}" ClickMode="Release" ToolTip="Move selection up"  Margin="5,1,2,2">
+                <iconPacks:PackIconMaterial Kind="ChevronUp" Width="32" Height="32"/>
             </Button>
-            <Button Focusable="False" Name="MoveDown" HorizontalContentAlignment="Left" Command="{Binding MoveDown}" ClickMode="Release" ToolTip.Tip="Move selection down">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.ChevronDown" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="Down"/>
-                </StackPanel>
+            <Button Style="{StaticResource MoveBtn}" Name="MoveDown" Command="{Binding MoveDown}" ClickMode="Release" ToolTip="Move selection down"  Margin="5,5,2,1">
+                <iconPacks:PackIconMaterial Kind="ChevronDown" Width="32" Height="32"/>
             </Button>
-            <Button Focusable="False" Name="MoveToBottom" HorizontalContentAlignment="Left" Command="{Binding MoveToBottom}" ClickMode="Release" ToolTip.Tip="Move selection to bottom">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.ChevronDoubleDown" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="To Bottom"/>
-                </StackPanel>
-            </Button>
-            <TextBlock Height="5"/>
-            <Button Focusable="False" Name="AlphaSort" HorizontalContentAlignment="Left" Command="{Binding AlphaSort}" ClickMode="Release" ToolTip.Tip="Sort alphabetically">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.SortAlphabeticalAscending" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="Alphabetical"/>
-                </StackPanel>
-            </Button>
-            <Button Focusable="False" Name="ReverseOrder" HorizontalContentAlignment="Left" Command="{Binding ReverseOrder}" ClickMode="Release" ToolTip.Tip="Reverse the order of the list">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.Sort" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="Reverse"/>
-                </StackPanel>
-            </Button>
-            <Button Focusable="False" Name="ExperimentalSort" HorizontalContentAlignment="Left" Command="{Binding ExperimentalSort}" ClickMode="Release" ToolTip.Tip="Sort using tags then by name and then by dependencies">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.SortVariantLock" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="Experimental"/>
-                </StackPanel>
-            </Button>
-            <CheckBox Focusable="False" IsChecked="{Binding Validate}" Content="Auto Validate" />
-            <Button Focusable="False" Name="Validate" HorizontalContentAlignment="Left" Command="{Binding ValidateCommand}" ClickMode="Release" ToolTip.Tip="Run validation">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.Sync" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="Validate"/>
-                </StackPanel>
-            </Button>
-            <TextBlock Height="5"/>
-            <Button Focusable="False" Name="CheckAll" HorizontalContentAlignment="Left" Command="{Binding CheckAll}" ClickMode="Release" ToolTip.Tip="Enable all mods">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.CheckBoxOutline" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="All"/>
-                </StackPanel>
-            </Button>
-            <Button Focusable="False" Name="UncheckAll" HorizontalContentAlignment="Left" Command="{Binding UncheckAll}" ClickMode="Release" ToolTip.Tip="Disable all mods">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.CheckboxBlankOutline" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="None"/>
-                </StackPanel>
-            </Button>
-            <Button Focusable="False" Name="InvertCheck" HorizontalContentAlignment="Left" Command="{Binding InvertCheck}" ClickMode="Release" ToolTip.Tip="Switch enabled/disabled mods">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.CheckboxMarked" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="Invert"/>
-                </StackPanel>
-            </Button>
-            <TextBlock Height="5"/>
-            <CheckBox Focusable="False" IsChecked="{Binding Backup}" Content="Auto Backup" />
-            <Button Focusable="False" Name="Save" HorizontalContentAlignment="Left" Command="{Binding Save}" ClickMode="Release" ToolTip.Tip="Save the mod order">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.ContentSave" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="Save"/>
-                </StackPanel>
-            </Button>
-            <TextBlock Height="5"/>
-            <Button Focusable="False" Name="Run" HorizontalContentAlignment="Left" Command="{Binding Run}" ClickMode="Release" ToolTip.Tip="Run Game">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.RunFast" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="Run"/>
-                </StackPanel>
-            </Button>
-            <Button Focusable="False" Name="Config" HorizontalContentAlignment="Left" Command="{Binding Config}" ClickMode="Release" ToolTip.Tip="Open config folder">
-                <StackPanel Orientation="Horizontal">
-                    <iconPack:IconControl Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.FolderSettingsVariantOutline" Width="16" Height="16"/>
-                    <TextBlock Width="5"/>
-                    <TextBlock Focusable="False" Text="Config dir"/>
-                </StackPanel>
+            <Button Style="{StaticResource MoveBtn}" Name="MoveToBottom" Command="{Binding MoveToBottom}" ClickMode="Release" ToolTip="Move selection to bottom"  Margin="5,1,2,2">
+                <iconPacks:PackIconMaterial Kind="ChevronDoubleDown" Width="32" Height="32"/>
             </Button>
         </StackPanel>
-        <ListBox Items="{Binding Manager.Mods}" SelectedIndex="{Binding SelectedIndex}" Name="ModList" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible">
+        <Grid DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="BannerLord" HorizontalAlignment="Center" FontFamily="/Assets/Fonts/#Viking-Normal" FontSize="32" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Mod Launcher" FontFamily="/Assets/Fonts/#Viking-Normal" FontSize="32" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
+            <Button Style="{StaticResource MyButton}" Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" Name="Run" Command="{Binding Run}" ClickMode="Release" ToolTip="Run Game" Margin="80,21,10,21" Width="100">PLAY</Button>
+        </Grid>
+        <Grid DockPanel.Dock="Bottom" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <Button  Grid.Row="0" Grid.Column="0" Style="{StaticResource MyButton}" Name="CheckAll" Command="{Binding CheckAll}" ClickMode="Release" ToolTip="Enable all mods" Margin="2,2,2,2">ALL</Button>
+            <Button  Grid.Row="0" Grid.Column="1" Style="{StaticResource MyButton}" Name="UncheckAll" Command="{Binding UncheckAll}" ClickMode="Release" ToolTip="Disable all mods"  Margin="2,2,2,2">NONE</Button>
+            <Button  Grid.Row="0" Grid.Column="2" Style="{StaticResource MyButton}" Name="InvertCheck" Command="{Binding InvertCheck}" ClickMode="Release" ToolTip="Switch enabled/disabled mods" Margin="2,2,2,2">INVERT</Button>
+            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
+                <TextBlock Text="SELECTION" HorizontalAlignment="Center" Padding="0,0,0,0" VerticalAlignment="Stretch" FontSize="20" FontFamily="/Assets/Fonts/#Candara" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
+            </StackPanel>
+            <Button  Grid.Row="0" Grid.Column="4" Style="{StaticResource MyButton}" Name="Config" Command="{Binding Config}" ClickMode="Release" ToolTip="Open config folder" Width="160" Margin="0,0,10,2">CONFIG DIR.</Button>
+            <Button  Grid.Row="1" Grid.Column="4" Style="{StaticResource MyButton}" Name="Save" Command="{Binding Save}" ClickMode="Release" ToolTip="Save the mod order" Width="160" Margin="0,2,10,4">SAVE</Button>
+        </Grid>
+        <ListBox ItemsSource="{Binding Manager.Mods}" SelectedIndex="{Binding SelectedIndex}" Name="ModList" BorderThickness="2,2,2,2" ScrollViewer.VerticalScrollBarVisibility="Visible" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" Background="#FF191311" BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" dd:DragDrop.DropHandler="{Binding}" HorizontalContentAlignment="Stretch">
+            <ListBox.Resources>
+                <Style TargetType="{x:Type ScrollBar}">
+                    <Setter Property="SnapsToDevicePixels" Value="True" />
+                    <Setter Property="OverridesDefaultStyle" Value="true" />
+                    <Setter Property="Background" Value="#ff4e3827"/>
+                    <Style.Triggers>
+                        <Trigger Property="Orientation" Value="Vertical">
+                            <Setter Property="Width" Value="18" />
+                            <Setter Property="Height" Value="Auto" />
+                            <Setter Property="Template" Value="{StaticResource VerticalScrollBar}" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+
+            </ListBox.Resources>
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="common:ModEntry">
-                    <Grid ColumnDefinitions="16,16,*,auto" RowDefinitions="16" Name="OperationGrid" Margin="0" Background="Transparent" PointerPressed="StartDrag" PointerReleased="EndDrag" PointerMoved="DoDrag">
-                        <CheckBox Focusable="False" Grid.Column="0" IsChecked="{Binding IsChecked}" VerticalAlignment="Center" IsVisible="{Binding IsCheckboxEnabled}" BorderThickness="0"/>
-                        <iconPack:IconControl Grid.Column="1" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="Red" Kind="PackIconMaterialKind.AccountTie" IsVisible="{Binding Module.Official}" ToolTip.Tip="Official mod"/>
-                        <iconPack:IconControl Grid.Column="1" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.AccountGroup" IsVisible="{Binding !Module.Official}" ToolTip.Tip="Community mod"/>
-                        <TextBlock Focusable="False" Grid.Column="2" Text="{Binding DisplayName}" Margin="5,0" ToolTip.Tip="{Binding Module.Id}"/>
-                        <ItemsControl Items="{Binding LoadOrderConflicts}" Grid.Column="3">
-                            <ItemsControl.ItemsPanel> 
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="common:LoadOrderConflict">
-                                    <StackPanel Orientation="Horizontal">
-                                        <iconPack:IconControl Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.ArrowUpDropCircleOutline" IsVisible="{Binding IsUp}" ToolTip.Tip="{Binding DependsOn}"/>
-                                        <iconPack:IconControl Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.ArrowDownDropCircleOutline" IsVisible="{Binding IsDown}" ToolTip.Tip="{Binding DependsOn}"/>
-                                        <iconPack:IconControl Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="Black" Kind="PackIconMaterialKind.AlertCircleOutline" IsVisible="{Binding IsMissing}" ToolTip.Tip="{Binding DependsOn}"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                    <Grid Name="OperationGrid" Margin="0" Background="Transparent">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="16" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="16" MaxWidth="16" MinWidth="16" />
+                            <ColumnDefinition Width="16" MaxWidth="16" MinWidth="16" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="16" MaxWidth="16" MinWidth="16" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Focusable="False" Grid.Column="0" IsChecked="{Binding IsChecked}" VerticalAlignment="Center" Visibility="{Binding IsCheckboxEnabled, Converter={StaticResource BoolToVisConverter}}" BorderThickness="0" Style="{StaticResource ModListCheckbox}"/>
+                        <iconPacks:PackIconMaterial  Grid.Column="1" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemNative}" Kind="AccountTie" Visibility="{Binding Module.Official, Converter={StaticResource BoolToVisConverter}}" ToolTip="Official mod"/>
+                        <iconPacks:PackIconMaterial  Grid.Column="1" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemCommunity}" Kind="AccountGroup" Visibility="{Binding Module.Official, Converter={StaticResource BoolToVisConverterInv}}" ToolTip="Community mod"/>
+                        <TextBlock Focusable="False" Grid.Column="2" Text="{Binding DisplayName}" Margin="5,0" ToolTip="{Binding Module.Id}" Foreground="{StaticResource ModListItemCommunity}" />
+                        <iconPacks:PackIconMaterial Grid.Column="3" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemCommunity}" Kind="AlertCircleOutline" Visibility="{Binding HasConflicts, Converter={StaticResource BoolToVisConverter}}" ToolTip="{Binding Conflicts}"/>
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
     </DockPanel>
-    <Window.Styles>
-        <Style Selector="ListBoxItem.BlackBottom">
-            <Setter Property="BorderThickness" Value="0,0,0,2"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
-            <Setter Property="Margin" Value="0,0,0,-2"/>
-        </Style>
-        <Style Selector="ListBoxItem.BlackTop">
-            <Setter Property="BorderThickness" Value="0,2,0,0"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
-            <Setter Property="Margin" Value="0,-2,0,0"/>
-        </Style>
-    </Window.Styles>
 </Window>

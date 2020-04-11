@@ -1,25 +1,26 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 using BannerLord.Common;
-using BannerLordLauncher.Views;
+using BannerLordLauncher.Avalonia.Views;
 using ReactiveUI;
 using Steam.Common;
-using Ookii.Dialogs.Wpf;
-using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using GongSolutions.Wpf.DragDrop;
 
-namespace BannerLordLauncher.ViewModels
+namespace BannerLordLauncher.Avalonia.ViewModels
 {
-    using System.Linq;
-
-    public sealed class MainWindowViewModel : ViewModelBase, IDropTarget
+    public sealed class MainWindowViewModel : ViewModelBase
     {
         public ModManager Manager { get; }
         private readonly MainWindow _window;
+        private readonly ListBox _modList;
+        private ListBoxItem _dragItem;
         private int _selectedIndex = -1;
 
         public int SelectedIndex
@@ -31,12 +32,13 @@ namespace BannerLordLauncher.ViewModels
         public MainWindowViewModel(MainWindow window)
         {
             this._window = window;
+            this._modList = this._window.Find<ListBox>("ModList");
             this.Manager = new ModManager();
 
             var moveUp = this.WhenAnyValue(x => x.SelectedIndex).Select(x => x > 0);
             var moveDown = this.WhenAnyValue(x => x.SelectedIndex).Select(x => x >= 0 && x < this.Manager.Mods.Count - 1);
 
-            this.Save = ReactiveCommand.Create(this.SaveDialog);
+            this.Save = ReactiveCommand.Create(() => this.Manager.Save());
             this.AlphaSort = ReactiveCommand.Create(() => this.Manager.AlphaSort());
             this.ReverseOrder = ReactiveCommand.Create(() => this.Manager.ReverseOrder());
             this.ExperimentalSort = ReactiveCommand.Create(() => this.Manager.TopologicalSort());
@@ -51,7 +53,7 @@ namespace BannerLordLauncher.ViewModels
             this.Config = ReactiveCommand.Create(() => this.Manager.OpenConfig());
         }
 
-        public void Initialize()
+        public async void Initialize()
         {
             var game = string.Empty;
 
@@ -74,7 +76,7 @@ namespace BannerLordLauncher.ViewModels
 
                 if (string.IsNullOrEmpty(game))
                 {
-                    game = this.FindGameFolder();
+                    game = await this.FindGameFolder();
                 }
 
                 this._window.Configuration.GamePath = game;
@@ -83,36 +85,57 @@ namespace BannerLordLauncher.ViewModels
             this.Manager.Initialize(game);
         }
 
-        private string FindGameFolder()
+        private async Task<string> FindGameFolder()
         {
             while (true)
             {
-                var dialog = new VistaFolderBrowserDialog
-                {
-                    Description = "Select game root folder",
-                    UseDescriptionForTitle = true
-                };
-                var result = dialog.ShowDialog(this._window);
+                var dialog = new OpenFolderDialog { Title = "Select game root folder", };
+                var result = await dialog.ShowAsync(this._window);
                 if (result is null) Environment.Exit(0);
-                if (!Directory.Exists(dialog.SelectedPath) || !File.Exists(Path.Combine(dialog.SelectedPath, "bin", "Win64_Shipping_Client", "Bannerlord.exe"))) continue;
-                return dialog.SelectedPath;
+                if (!Directory.Exists(result) || !File.Exists(Path.Combine(result, "bin", "Win64_Shipping_Client", "Bannerlord.exe"))) continue;
+                return result;
             }
         }
 
-        public void SaveDialog()
+        public void StartDrag(object sender, PointerPressedEventArgs e) =>
+            this._dragItem = this._modList.GetLogicalChildren().Cast<ListBoxItem>().Single(x => x.IsPointerOver);
+
+        public void DoDrag(object sender, PointerEventArgs e)
         {
-            if (this.Manager.Mods.Any(x => x.HasConflicts))
+            if (this._dragItem == null) return;
+            var list = this._modList.GetLogicalChildren().ToList();
+
+            var hoveredItem = (ListBoxItem)list.FirstOrDefault(x => this._window.GetVisualsAt(e.GetPosition(this._window)).Contains(((IVisual)x).GetVisualChildren().First()));
+            var dragItemIndex = list.IndexOf(this._dragItem);
+            var hoveredItemIndex = list.IndexOf(hoveredItem);
+
+            this.ClearDropStyling();
+            if (!Equals(hoveredItem, this._dragItem)) hoveredItem?.Classes.Add(dragItemIndex > hoveredItemIndex ? "BlackTop" : "BlackBottom");
+        }
+
+        public void EndDrag(object sender, PointerReleasedEventArgs e)
+        {
+            var hoveredItem = (ListBoxItem)this._modList.GetLogicalChildren().FirstOrDefault(x => this._window.GetVisualsAt(e.GetPosition(this._window)).Contains(((IVisual)x).GetVisualChildren().First()));
+            if (this._dragItem != null && hoveredItem != null && !Equals(this._dragItem, hoveredItem))
             {
-                if (MessageBox.Show(
-                        this._window,
-                        "Your mod list has existing conflicts, are you sure that you want to save it?",
-                        "Warning",
-                        MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
-                {
-                    return;
-                }
+                var a = this._dragItem.DataContext as ModEntry;
+                var b = hoveredItem.DataContext as ModEntry;
+                this.Manager.Mods.Move(this.Manager.Mods.IndexOf(a),
+                    this.Manager.Mods.IndexOf(b));
+                this.Manager.Validate();
+
             }
-            this.Manager.Save();
+
+            this.ClearDropStyling();
+            this._dragItem = null;
+        }
+
+        private void ClearDropStyling()
+        {
+            foreach (var item in this._modList.GetLogicalChildren().Cast<ListBoxItem>())
+            {
+                item.Classes.RemoveAll(new[] { "BlackTop", "BlackBottom" });
+            }
         }
 
         // ReSharper disable MemberCanBePrivate.Global
@@ -132,52 +155,5 @@ namespace BannerLordLauncher.ViewModels
         public ICommand InvertCheck { get; }
         // ReSharper restore UnusedAutoPropertyAccessor.Global
         // ReSharper restore MemberCanBePrivate.Global
-
-        #region Implementation of IDropTarget
-
-        public void DragOver(IDropInfo dropInfo)
-        {
-            var sourceItem = dropInfo.Data as ModEntry;
-            var targetItem = dropInfo.TargetItem as ModEntry;
-
-            if (sourceItem != null && targetItem != null)
-            {
-                dropInfo.Effects = DragDropEffects.Move;
-                dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
-            }
-        }
-
-        public void Drop(IDropInfo dropInfo)
-        {
-            if (dropInfo?.DragInfo == null)
-            {
-                return;
-            }
-
-            var insertIndex = dropInfo.UnfilteredInsertIndex;
-            if (dropInfo.VisualTarget is ItemsControl itemsControl)
-            {
-                if (itemsControl.Items is IEditableCollectionView editableItems)
-                {
-                    var newItemPlaceholderPosition = editableItems.NewItemPlaceholderPosition;
-                    if (newItemPlaceholderPosition == NewItemPlaceholderPosition.AtBeginning && insertIndex == 0)
-                    {
-                        ++insertIndex;
-                    }
-                    else if (newItemPlaceholderPosition == NewItemPlaceholderPosition.AtEnd && insertIndex == itemsControl.Items.Count)
-                    {
-                        --insertIndex;
-                    }
-                }
-            }
-            var sourceItem = dropInfo.Data as ModEntry;
-            var index = this.Manager.Mods.IndexOf(sourceItem);
-            if (index < insertIndex) insertIndex--;
-            this.Manager.Mods.Remove(sourceItem);
-            this.Manager.Mods.Insert(insertIndex, sourceItem);
-            this.Manager.Validate();
-        }
-
-        #endregion
     }
 }

@@ -1,15 +1,9 @@
-<Application xmlns="https://github.com/avaloniaui"
+﻿<Application x:Class="BannerLordLauncher.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:bannerLordLauncher="clr-namespace:BannerLordLauncher"
-             x:Class="BannerLordLauncher.App">
-    <Application.DataTemplates>
-        <bannerLordLauncher:ViewLocator/>
-    </Application.DataTemplates>
-
-    <Application.Styles>
-        <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml"/>
-        <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"/>
-        <StyleInclude Source="avares://BannerLordLauncher/MicroCubeAvalonia/DefaultTheme.xaml"/>
-        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml"/>
-    </Application.Styles>
+             xmlns:local="clr-namespace:BannerLordLauncher"
+             StartupUri="Views/MainWindow.xaml">
+    <Application.Resources>
+        
+    </Application.Resources>
 </Application>

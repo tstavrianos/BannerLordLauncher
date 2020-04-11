@@ -6,7 +6,7 @@ using Serilog.Exceptions;
 using Splat;
 using Splat.Serilog;
 
-namespace BannerLordLauncher
+namespace BannerLordLauncher.Avalonia
 {
     internal static class Program
     {

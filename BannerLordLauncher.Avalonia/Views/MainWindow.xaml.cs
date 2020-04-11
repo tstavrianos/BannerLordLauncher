@@ -1,17 +1,18 @@
-﻿using System.IO;
-using BannerLordLauncher.ViewModels;
+using System;
+using System.IO;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Markup.Xaml;
+using BannerLordLauncher.Avalonia.ViewModels;
 using Newtonsoft.Json;
 
-namespace BannerLordLauncher.Views
+namespace BannerLordLauncher.Avalonia.Views
 {
-    using System;
-
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow
+    public sealed class MainWindow : Window
     {
         internal AppConfig Configuration { get; }
+        public MainWindowViewModel ViewModel => this.DataContext as MainWindowViewModel;
         private readonly string _configurationFilePath;
 
         public MainWindow()
@@ -31,8 +32,10 @@ namespace BannerLordLauncher.Views
             }
             if (this.Configuration == null) this.Configuration = new AppConfig();
 
-            InitializeComponent();
-
+            this.InitializeComponent();
+#if DEBUG
+            this.AttachDevTools();
+#endif
             var model = new MainWindowViewModel(this);
             this.DataContext = model;
             model.Initialize();
@@ -41,6 +44,17 @@ namespace BannerLordLauncher.Views
         private static string GetApplicationRoot()
         {
             return Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+        }
+
+        public void StartDrag(object sender, PointerPressedEventArgs e) => this.ViewModel.StartDrag(sender, e);
+
+        public void DoDrag(object sender, PointerEventArgs e) => this.ViewModel.DoDrag(sender, e);
+
+        public void EndDrag(object sender, PointerReleasedEventArgs e) => this.ViewModel.EndDrag(sender, e);
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
         }
 
         protected override void OnClosed(EventArgs e)

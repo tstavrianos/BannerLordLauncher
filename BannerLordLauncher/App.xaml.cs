@@ -1,25 +1,39 @@
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Markup.Xaml;
-using BannerLordLauncher.Views;
+﻿using System.Windows;
+using Serilog;
+using Serilog.Exceptions;
+using Splat;
+using Splat.Serilog;
 
 namespace BannerLordLauncher
 {
-    public sealed class App : Application
+    /// <summary>
+    /// Interaction logic for App.xaml
+    /// </summary>
+    public partial class App : Application
     {
-        public override void Initialize()
+        #region Overrides of Application
+
+        protected override void OnStartup(StartupEventArgs e)
         {
-            AvaloniaXamlLoader.Load(this);
+            InitializeLogging();
+            base.OnStartup(e);
         }
 
-        public override void OnFrameworkInitializationCompleted()
-        {
-            if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            {
-                desktop.MainWindow = new MainWindow();
-            }
+        #endregion
 
-            base.OnFrameworkInitializationCompleted();
+        private static void InitializeLogging()
+        {
+            Log.Logger = new LoggerConfiguration()
+#if DEBUG
+                .MinimumLevel.Debug() //
+                .Enrich.WithExceptionDetails() //
+#else
+                .MinimumLevel.Warning()//
+#endif
+                .Enrich.FromLogContext() //
+                .WriteTo.File("app.log") //
+                .CreateLogger();
+            Locator.CurrentMutable.UseSerilogFullLogger();
         }
     }
 }

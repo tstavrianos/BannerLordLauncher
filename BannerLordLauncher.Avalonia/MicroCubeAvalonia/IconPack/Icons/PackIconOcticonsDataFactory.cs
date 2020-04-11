@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BannerLordLauncher.MicroCubeAvalonia.IconPack.Icons
+namespace BannerLordLauncher.Avalonia.MicroCubeAvalonia.IconPack.Icons
 {
     /// ******************************************
     /// This code is auto generated. Do not amend.

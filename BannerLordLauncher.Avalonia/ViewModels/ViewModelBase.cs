@@ -1,6 +1,6 @@
 ﻿using ReactiveUI;
 
-namespace BannerLordLauncher.ViewModels
+namespace BannerLordLauncher.Avalonia.ViewModels
 {
     public abstract class ViewModelBase : ReactiveObject
     {

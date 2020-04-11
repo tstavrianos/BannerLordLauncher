@@ -2,9 +2,9 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using BannerLordLauncher.MicroCubeAvalonia.IconPack.Icons;
+using BannerLordLauncher.Avalonia.MicroCubeAvalonia.IconPack.Icons;
 
-namespace BannerLordLauncher.MicroCubeAvalonia.IconPack
+namespace BannerLordLauncher.Avalonia.MicroCubeAvalonia.IconPack
 {
     public sealed class IconControl : ContentControl
     {

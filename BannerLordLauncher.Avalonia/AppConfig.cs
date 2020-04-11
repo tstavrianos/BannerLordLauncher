@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace BannerLordLauncher
+namespace BannerLordLauncher.Avalonia
 {
     public class AppConfig
     {

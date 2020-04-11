@@ -61,6 +61,25 @@ namespace BannerLord.Common
             set => this.RaiseAndSetIfChanged(ref this._loadOrderConflicts, value);
         }
 
+        public bool HasConflicts => this._loadOrderConflicts.Count > 0;
+
+        public string Conflicts
+        {
+            get
+            {
+                var ret = string.Empty;
+                foreach (var conflict in this._loadOrderConflicts)
+                {
+                    if (!string.IsNullOrEmpty(ret)) ret += Environment.NewLine;
+                    if (conflict.IsUp) ret += $"{conflict.DependsOn} depends on this";
+                    else if (conflict.IsDown) ret += $"This depends on {conflict.DependsOn}";
+                    else ret += $"{conflict.DependsOn} is missing";
+                }
+
+                return ret;
+            }
+        }
+
         public string DisplayName => this.Module?.Name;
 
         public bool IsChecked

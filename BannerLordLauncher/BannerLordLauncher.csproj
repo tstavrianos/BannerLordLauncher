@@ -1,42 +1,43 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>BannerLordLauncher</RootNamespace>
-    <TieredCompilation>false</TieredCompilation>
-    <PublishReadyToRun>false</PublishReadyToRun>
-    <TieredCompilationQuickJit>false</TieredCompilationQuickJit>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>BLLicon.ico</ApplicationIcon>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishSingleFile>true</PublishSingleFile>
     <PublishTrimmed>true</PublishTrimmed>
+    <RootNamespace>BannerLordLauncher</RootNamespace>
+
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DebugType>full</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Compile Update="**\*.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-    <AvaloniaResource Include="**\*.xaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Assets\**" />
+    <Resource Include="Assets\BLLicon.ico" />
+    <Resource Include="Assets\Fonts\Candara.ttf" />
+    <Resource Include="Assets\Fonts\Candarab.ttf" />
+    <Resource Include="Assets\Fonts\Candarai.ttf" />
+    <Resource Include="Assets\Fonts\Candaral.ttf" />
+    <Resource Include="Assets\Fonts\Candarali.ttf" />
+    <Resource Include="Assets\Fonts\Candaraz.ttf" />
+    <Resource Include="Assets\Fonts\VIKING-N.TTF" />
   </ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.9.4" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.9.4" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.9.4" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.4" />
-    <PackageReference Include="Avalonia.Remote.Protocol" Version="0.9.4" />
-    <PackageReference Include="ReactiveUI" Version="11.2.3" />
+    <PackageReference Include="gong-wpf-dragdrop" Version="2.2.0" />
+    <PackageReference Include="MahApps.Metro.IconPacks.Material" Version="3.7.0" />
+    <PackageReference Include="Ookii.Dialogs.Wpf.NETCore" Version="2.1.0" />
+    <PackageReference Include="ReactiveUI.WPF" Version="11.3.1" />
     <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="Serilog.Exceptions" Version="5.4.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
     <PackageReference Include="Splat.Serilog" Version="9.3.11" />
+    <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\BannerLord.Common\BannerLord.Common.csproj" />
     <ProjectReference Include="..\Steam.Common\Steam.Common.csproj" />
   </ItemGroup>
+
 </Project>
