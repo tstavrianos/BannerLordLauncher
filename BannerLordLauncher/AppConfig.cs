@@ -6,5 +6,8 @@ namespace BannerLordLauncher
     {
         [JsonProperty("gamePath")]
         public string GamePath { get; set; }
+
+        [JsonProperty("placement")]
+        public WindowPlacement.Data Placement { get; set; }
     }
 }

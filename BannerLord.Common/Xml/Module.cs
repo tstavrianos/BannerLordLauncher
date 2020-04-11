@@ -33,7 +33,7 @@ namespace BannerLord.Common.Xml
                 manager.Log().Warn($"File {file} does not exist");
                 return null;
             }
-            
+
             var document = new XmlDocument();
             try
             {
@@ -54,11 +54,11 @@ namespace BannerLord.Common.Xml
                 ret.Id = module.SelectSingleNode("Id")?.Attributes["value"]?.InnerText;
                 if (string.IsNullOrEmpty(ret.Name) || string.IsNullOrWhiteSpace(ret.Id))
                 {
-                    if(string.IsNullOrEmpty(ret.Name)) manager.Log().Error($"Invalid module name in {file}");
-                    if(string.IsNullOrEmpty(ret.Id)) manager.Log().Error($"Invalid module id in {file}");
+                    if (string.IsNullOrEmpty(ret.Name)) manager.Log().Error($"Invalid module name in {file}");
+                    if (string.IsNullOrEmpty(ret.Id)) manager.Log().Error($"Invalid module id in {file}");
                     return null;
                 }
-                ret.Version = module.SelectSingleNode("Id")?.Attributes["value"]?.InnerText;
+                ret.Version = module.SelectSingleNode("Version")?.Attributes["value"]?.InnerText;
                 ret.Official = string.Equals(module.SelectSingleNode("Official")?.Attributes["value"]?.InnerText, "true", StringComparison.OrdinalIgnoreCase);
                 ret.DefaultModule = string.Equals(module.SelectSingleNode("DefaultModule")?.Attributes["value"]?.InnerText, "true", StringComparison.OrdinalIgnoreCase);
                 ret.SingleplayerModule = string.Equals(module.SelectSingleNode("SingleplayerModule")?.Attributes["value"]?.InnerText, "true", StringComparison.OrdinalIgnoreCase);
@@ -70,7 +70,7 @@ namespace BannerLord.Common.Xml
                     for (var i = 0; i < dependedModulesList.Count; i++)
                     {
                         var value = dependedModulesList[i].Attributes["Id"]?.InnerText;
-                        if(!string.IsNullOrEmpty(value)) ret.DependedModules.Add(value);
+                        if (!string.IsNullOrEmpty(value)) ret.DependedModules.Add(value);
                     }
                 }
                 var subModules = module.SelectSingleNode("SubModules");
@@ -80,7 +80,7 @@ namespace BannerLord.Common.Xml
                     for (var i = 0; i < subModulesList.Count; i++)
                     {
                         var subModule = SubModule.Load(subModulesList[i]);
-                        if(subModule != null) ret.SubModules.Add(subModule);
+                        if (subModule != null) ret.SubModules.Add(subModule);
                     }
                 }
 
