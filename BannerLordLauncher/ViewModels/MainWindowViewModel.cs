@@ -133,7 +133,7 @@ namespace BannerLordLauncher.ViewModels
             var game = string.Empty;
 
             if (!string.IsNullOrEmpty(this._window.Configuration.GamePath) &&
-                Directory.Exists(this._window.Configuration.GamePath))
+                Directory.Exists(this._window.Configuration.GamePath) && File.Exists(Path.Combine(this._window.Configuration.GamePath, "bin", "Win64_Shipping_Client", "Bannerlord.exe")))
             {
                 game = this._window.Configuration.GamePath;
             }
