@@ -6,5 +6,9 @@ namespace BannerLordLauncher.Avalonia
     {
         [JsonProperty("gamePath")]
         public string GamePath { get; set; }
+
+
+        [JsonProperty("configPath")]
+        public string ConfigPath { get; set; }
     }
 }

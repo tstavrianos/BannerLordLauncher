@@ -9,5 +9,8 @@ namespace BannerLordLauncher
 
         [JsonProperty("placement")]
         public WindowPlacement.Data Placement { get; set; }
+
+        [JsonProperty("configPath")]
+        public string ConfigPath { get; set; }
     }
 }

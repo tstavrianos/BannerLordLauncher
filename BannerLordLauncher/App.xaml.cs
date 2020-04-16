@@ -9,24 +9,21 @@ namespace BannerLordLauncher
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App
     {
-        #region Overrides of Application
-
         protected override void OnStartup(StartupEventArgs e)
         {
             InitializeLogging();
             base.OnStartup(e);
         }
 
-        #endregion
-
         private static void InitializeLogging()
         {
             Log.Logger = new LoggerConfiguration()
+                .Enrich.WithExceptionDetails() //
+
 #if DEBUG
                 .MinimumLevel.Debug() //
-                .Enrich.WithExceptionDetails() //
 #else
                 .MinimumLevel.Warning()//
 #endif

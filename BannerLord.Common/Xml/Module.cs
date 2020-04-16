@@ -42,6 +42,7 @@ namespace BannerLord.Common.Xml
             catch (Exception ex)
             {
                 manager.Log().Error($"Error while loading {file}", ex);
+
                 return null;
             }
 

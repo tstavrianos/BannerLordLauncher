@@ -2,7 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="clr-namespace:BannerLordLauncher.Controls"
                     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-                    xmlns:local="clr-namespace:BannerLordLauncher">
+                    xmlns:local="clr-namespace:BannerLordLauncher"
+                    xmlns:common="clr-namespace:BannerLord.Common;assembly=BannerLord.Common">
     <controls:BoolToVisibleOrHidden x:Key="BoolToVisConverter" Collapse="True" Reverse="False" />
     <controls:BoolToVisibleOrHidden x:Key="BoolToVisConverterInv" Collapse="True" Reverse="True" />
     <SolidColorBrush x:Key="PackIconMaterialForeground1" Color="#c48129"/>
@@ -91,4 +92,92 @@
             </Setter.Value>
         </Setter>
     </Style>
+    
+    <Style x:Key="TitleBarButtonStyle" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource PackIconMaterialForeground1}" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border
+                        x:Name="border"
+                        Background="#3e2c20"
+                        BorderThickness="0"
+                        SnapsToDevicePixels="true">
+                        <ContentPresenter
+                            x:Name="contentPresenter"
+                            Margin="0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Focusable="False"
+                            RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter TargetName="border" Property="Background" Value="#4e3827" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="true">
+                            <Setter TargetName="border" Property="Background" Value="#4e3827" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="TitleBarCloseButtonStyle" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource PackIconMaterialForeground1}" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border
+                        x:Name="border"
+                        Background="#3e2c20"
+                        BorderThickness="0"
+                        SnapsToDevicePixels="true">
+                        <ContentPresenter
+                            x:Name="contentPresenter"
+                            Margin="0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Focusable="False"
+                            RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter TargetName="border" Property="Background" Value="#4e3827" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="true">
+                            <Setter TargetName="border" Property="Background" Value="#4e3827" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <DataTemplate x:Key="ModListEntry" DataType="common:ModEntry">
+        <Grid x:Name="ModListEntryGrid" Margin="0" Background="Transparent">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="16" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="16" MaxWidth="16" MinWidth="16" />
+                <ColumnDefinition Width="16" MaxWidth="16" MinWidth="16" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="16" MaxWidth="16" MinWidth="16" />
+            </Grid.ColumnDefinitions>
+            <CheckBox Focusable="False" Grid.Column="0" IsChecked="{Binding IsChecked}" VerticalAlignment="Center" Visibility="{Binding IsCheckboxEnabled, Converter={StaticResource BoolToVisConverter}}" BorderThickness="0" Style="{StaticResource ModListCheckbox}"/>
+            <iconPacks:PackIconMaterial  Grid.Column="1" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemNative}" Kind="AccountTie" Visibility="{Binding Module.Official, Converter={StaticResource BoolToVisConverter}}" ToolTip="Official mod"/>
+            <iconPacks:PackIconMaterial  Grid.Column="1" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemCommunity}" Kind="AccountGroup" Visibility="{Binding Module.Official, Converter={StaticResource BoolToVisConverterInv}}" ToolTip="Community mod"/>
+            <TextBlock Focusable="False" Grid.Column="2" Text="{Binding DisplayName}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="/Assets/Fonts/#Candara" FontSize="15" VerticalAlignment="Center"/>
+            <TextBlock Focusable="False" Grid.Column="3" Text="{Binding Module.Version}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="/Assets/Fonts/#Candara" FontSize="15" VerticalAlignment="Center"/>
+            <iconPacks:PackIconMaterial Grid.Column="4" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemCommunity}" Kind="AlertCircleOutline" Visibility="{Binding HasConflicts, Converter={StaticResource BoolToVisConverter}}" ToolTip="{Binding Conflicts}"/>
+        </Grid>
+    </DataTemplate>
 </ResourceDictionary>

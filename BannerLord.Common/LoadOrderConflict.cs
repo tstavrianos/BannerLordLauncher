@@ -4,23 +4,13 @@ namespace BannerLord.Common
 {
     public sealed class LoadOrderConflict : ReactiveObject
     {
-        private string _dependsOnId;
+        private string _dependsOn;
 
-        public string DependsOnId
+        public string DependsOn
         {
-            get => this._dependsOnId;
-            set => this.RaiseAndSetIfChanged(ref this._dependsOnId, value);
+            get => this._dependsOn;
+            set => this.RaiseAndSetIfChanged(ref this._dependsOn, value);
         }
-
-        private string _dependsOnName;
-
-        public string DependsOnName
-        {
-            get => this._dependsOnName;
-            set => this.RaiseAndSetIfChanged(ref this._dependsOnName, value);
-        }
-
-        public string DependsOn => this.DependsOnName ?? this.DependsOnId;
 
         private bool _isUp;
 

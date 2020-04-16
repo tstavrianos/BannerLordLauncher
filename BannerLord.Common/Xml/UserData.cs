@@ -6,7 +6,7 @@ using Splat;
 
 namespace BannerLord.Common.Xml
 {
-    public class UserData: IEnableLogger
+    public class UserData : IEnableLogger
     {
         public GameType GameType { get; set; }
         public UserGameTypeData SingleplayerData { get; set; }
@@ -44,6 +44,7 @@ namespace BannerLord.Common.Xml
             var xmlSerializer = new XmlSerializer(typeof(UserData));
             try
             {
+                if (File.Exists(file)) File.Delete(file);
                 using var xmlWriter = XmlWriter.Create(file, new XmlWriterSettings
                 {
                     Indent = true

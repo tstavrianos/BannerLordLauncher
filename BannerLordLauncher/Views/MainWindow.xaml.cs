@@ -3,6 +3,7 @@ using BannerLordLauncher.ViewModels;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel;
+using System.Windows;
 
 namespace BannerLordLauncher.Views
 {
@@ -33,7 +34,8 @@ namespace BannerLordLauncher.Views
                 this.Configuration = new AppConfig();
                 this.Configuration.Placement = new WindowPlacement.Data { normalPosition = new WindowPlacement.Rect(0, 0, 604, 730) };
             }
-            InitializeComponent();
+
+            this.InitializeComponent();
 
             var model = new MainWindowViewModel(this);
             this.DataContext = model;
@@ -57,7 +59,47 @@ namespace BannerLordLauncher.Views
             this.Configuration.Placement = this.GetPlacement();
             var settings = new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, Formatting = Formatting.Indented };
             File.WriteAllText(this._configurationFilePath, JsonConvert.SerializeObject(this.Configuration, settings));
+        }
 
+        private void RefreshMaximizeRestoreButton()
+        {
+            if (this.WindowState == System.Windows.WindowState.Maximized)
+            {
+                this.maximizeButton.Visibility = System.Windows.Visibility.Collapsed;
+                this.restoreButton.Visibility = System.Windows.Visibility.Visible;
+            }
+            else
+            {
+                this.maximizeButton.Visibility = System.Windows.Visibility.Visible;
+                this.restoreButton.Visibility = System.Windows.Visibility.Collapsed;
+            }
+        }
+
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            this.RefreshMaximizeRestoreButton();
+        }
+
+        private void OnMinimizeButtonClick(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = System.Windows.WindowState.Minimized;
+        }
+
+        private void OnMaximizeRestoreButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (this.WindowState == System.Windows.WindowState.Maximized)
+            {
+                this.WindowState = System.Windows.WindowState.Normal;
+            }
+            else
+            {
+                this.WindowState = System.Windows.WindowState.Maximized;
+            }
+        }
+
+        private void OnCloseButtonClick(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
     }
 }

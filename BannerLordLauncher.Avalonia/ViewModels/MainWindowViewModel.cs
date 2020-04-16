@@ -15,6 +15,8 @@ using Steam.Common;
 
 namespace BannerLordLauncher.Avalonia.ViewModels
 {
+    using Splat;
+
     public sealed class MainWindowViewModel : ViewModelBase
     {
         public ModManager Manager { get; }
@@ -81,8 +83,40 @@ namespace BannerLordLauncher.Avalonia.ViewModels
 
                 this._window.Configuration.GamePath = game;
             }
+            var config = string.Empty;
+            if (!string.IsNullOrEmpty(this._window.Configuration.ConfigPath) && Directory.Exists(this._window.Configuration.ConfigPath))
+            {
+                config = this._window.Configuration.ConfigPath;
+            }
+            else
+            {
+                try
+                {
+                    var basePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                    if (Directory.Exists(basePath))
+                    {
+                        basePath = Path.Combine(basePath, "Mount and Blade II Bannerlord");
+                        if (Directory.Exists(basePath))
+                        {
+                            basePath = Path.Combine(basePath, "Configs");
+                            if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
+                            config = basePath;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.Log().Error(ex);
+                    config = null;
+                }
+            }
 
-            this.Manager.Initialize(game);
+            if (string.IsNullOrEmpty(config))
+            {
+                config = await this.FindConfigFolder();
+            }
+
+            this.Manager.Initialize(config, game);
         }
 
         private async Task<string> FindGameFolder()
@@ -93,6 +127,18 @@ namespace BannerLordLauncher.Avalonia.ViewModels
                 var result = await dialog.ShowAsync(this._window);
                 if (result is null) Environment.Exit(0);
                 if (!Directory.Exists(result) || !File.Exists(Path.Combine(result, "bin", "Win64_Shipping_Client", "Bannerlord.exe"))) continue;
+                return result;
+            }
+        }
+
+        private async Task<string> FindConfigFolder()
+        {
+            while (true)
+            {
+                var dialog = new OpenFolderDialog { Title = "Select game config folder, in documents", };
+                var result = await dialog.ShowAsync(this._window);
+                if (result is null) Environment.Exit(0);
+                if (!Directory.Exists(result)) continue;
                 return result;
             }
         }

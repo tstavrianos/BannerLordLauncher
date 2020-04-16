@@ -20,14 +20,7 @@ namespace BannerLord.Common
 
         public override int GetHashCode()
         {
-            var hashCode = new HashCode();
-            hashCode.Add(this._module);
-            hashCode.Add(this._userModData);
-            hashCode.Add(this._isChecked);
-            hashCode.Add(this._originalSpot);
-            hashCode.Add(this._isPointerOver);
-            hashCode.Add(this._loadOrderConflicts);
-            return hashCode.ToHashCode();
+            return this._module.Id.GetHashCode(StringComparison.OrdinalIgnoreCase);
         }
 
         private Module _module;
@@ -37,7 +30,7 @@ namespace BannerLord.Common
         private bool _isPointerOver;
         private ObservableCollection<LoadOrderConflict> _loadOrderConflicts;
 
-        public bool IsCheckboxEnabled => this._module?.Official == false && this._module?.SingleplayerModule == true;
+        public bool IsCheckboxEnabled => this._module.Official == false && this._module.SingleplayerModule == true;
 
         public Module Module
         {
@@ -80,7 +73,7 @@ namespace BannerLord.Common
             }
         }
 
-        public string DisplayName => this.Module?.Name;
+        public string DisplayName => this.Module.Name;
 
         public bool IsChecked
         {
@@ -113,16 +106,9 @@ namespace BannerLord.Common
 
             if (ReferenceEquals(b, null)) return false;
 
-            if (a.UserModData == null || b.UserModData == null) return false;
-            if (!string.IsNullOrWhiteSpace(a.Module.Id))
-                return a.Module.Id.Equals(b.Module.Id,
-                    StringComparison.OrdinalIgnoreCase);
 
-            if (!string.IsNullOrWhiteSpace(a.Module.Name))
-                return a.Module.Name.Equals(b.Module.Name,
+            return a.Module.Id.Equals(b.Module.Id,
                     StringComparison.OrdinalIgnoreCase);
-
-            return false;
         }
 
         public static bool operator !=(ModEntry a, ModEntry b)

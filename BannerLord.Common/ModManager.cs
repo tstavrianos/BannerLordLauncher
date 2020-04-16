@@ -6,23 +6,28 @@ using System.Linq;
 using System.Threading;
 using BannerLord.Common.Xml;
 using Splat;
+using System.Collections.Generic;
 
 namespace BannerLord.Common
 {
+
     public sealed class ModManager : IEnableLogger
     {
         public ObservableCollection<ModEntry> Mods { get; } = new ObservableCollection<ModEntry>();
         private string _basePath;
         private bool _runValidation;
-        private string _gameExe;
 
-        public void Initialize(string game)
+        private string _modulePath;
+        public string GameExe { get; private set; }
+
+        public void Initialize(string config, string game)
         {
             this._runValidation = false;
-            this._basePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\Mount and Blade II Bannerlord\\Configs\\";
-            if (!Directory.Exists(this._basePath)) Directory.CreateDirectory(this._basePath);
+            this._basePath = config;
+            if (!Directory.Exists(Path.Combine(this._basePath, "BannerLordLauncher Backups"))) Directory.CreateDirectory(Path.Combine(this._basePath, "BannerLordLauncher Backups"));
             var launcherData = UserData.Load(this, Path.Combine(this._basePath, "LauncherData.xml")) ?? new UserData();
-            this._gameExe = Path.Combine(game, "bin", "Win64_Shipping_Client", "Bannerlord.exe");
+            this._modulePath = Path.Combine(game, "Modules");
+            this.GameExe = Path.Combine(game, "bin", "Win64_Shipping_Client", "Bannerlord.exe");
             var modulesFolder = Path.Combine(game, "Modules");
             var modules = Directory.EnumerateDirectories(modulesFolder, "*", SearchOption.TopDirectoryOnly).Select(dir => Module.Load(this, Path.GetFileName(dir), game)).Where(module => module != null).ToList();
 
@@ -30,20 +35,27 @@ namespace BannerLord.Common
             {
                 foreach (var mod in launcherData.SingleplayerData.ModDatas)
                 {
+                    if (this.Mods.Any(x => x.UserModData.Id.Equals(mod.Id, StringComparison.OrdinalIgnoreCase))) continue;
                     var module = modules.FirstOrDefault(x => x.Id == mod.Id);
-                    if (module == null) continue;
+                    if (module == null)
+                    {
+                        this.Log().Warn($"{mod.Id} could not be found in {modulesFolder}");
+                        continue;
+                    }
+
                     modules.Remove(module);
                     var modEntry = new ModEntry { Module = module, UserModData = mod };
                     this.Mods.Add(modEntry);
-                    if (modEntry.Module?.Official == true) modEntry.IsChecked = true;
+                    if (modEntry.Module.Official == true) modEntry.IsChecked = true;
                 }
             }
 
             foreach (var module in modules)
             {
+                if (this.Mods.Any(x => x.Module.Id.Equals(module.Id, StringComparison.OrdinalIgnoreCase))) continue;
                 var modEntry = new ModEntry { Module = module, UserModData = new UserModData(module.Id, false) };
                 this.Mods.Add(modEntry);
-                if (modEntry.Module?.Official == true) modEntry.IsChecked = true;
+                if (modEntry.Module.Official == true) modEntry.IsChecked = true;
             }
 
             this._runValidation = true;
@@ -54,35 +66,93 @@ namespace BannerLord.Common
 
         private string GameArguments() => $"/singleplayer {this.EnabledMods()}";
 
-        private static void BackupFile(string file)
+        private void BackupFile(string file)
         {
             if (!File.Exists(file)) return;
             var ext = Path.GetExtension(file);
             var i = 0;
-            var newFile = Path.ChangeExtension(file, ext + $".{i:D3}");
+            var newFile = Path.ChangeExtension(file, $"{ext}.{i:D3}");
+            newFile = Path.Combine(this._basePath, "BannerLordLauncher Backups", Path.GetFileName(newFile));
             while (File.Exists(newFile))
             {
                 i++;
-                newFile = Path.ChangeExtension(file, ext + $".{i:D3}");
+                newFile = Path.ChangeExtension(file, $"{ext}.{i:D3}");
+                newFile = Path.Combine(this._basePath, "BannerLordLauncher Backups", Path.GetFileName(newFile));
             }
 
             if (i <= 999)
             {
-                File.Move(file, newFile);
+                try
+                {
+                    File.Move(file, newFile);
+                }
+                catch (Exception e)
+                {
+                    this.Log().Error(e);
+                }
+            }
+        }
+
+        private IEnumerable<string> GetAssemblies()
+        {
+            foreach (var module in this.Mods.Where(x => x.IsChecked))
+            {
+                var path = Path.Combine(this._modulePath, module.Module.DirectoryName, "bin", "Win64_Shipping_Client");
+                if (!Directory.Exists(path)) continue;
+
+                foreach (var subModule in module.Module.SubModules)
+                {
+
+                    foreach (var assembly in subModule.Assemblies ?? Enumerable.Empty<string>())
+                    {
+                        var file = Path.Combine(path, assembly);
+                        if (File.Exists(file)) yield return file;
+                    }
+
+                    if (!string.IsNullOrEmpty(subModule.DLLName))
+                    {
+                        var file = Path.Combine(path, subModule.DLLName);
+                        if (File.Exists(file)) yield return file;
+                    }
+                }
             }
         }
 
         public void RunGame()
         {
-            if (string.IsNullOrEmpty(this._gameExe)) return;
+            if (string.IsNullOrEmpty(this.GameExe))
+            {
+                this.Log().Error("Game executable could not be detected");
+                return;
+            }
+            if (!File.Exists(this.GameExe))
+            {
+                this.Log().Error($"{this.GameExe} could not be found");
+                return;
+            }
+
+            foreach (var dll in this.GetAssemblies().Distinct())
+            {
+                UnblockFiles.ZoneHelper.Remove(dll, this);
+            }
+            this.Log().Warn($"Trying to execute: {this.GameExe} {this.GameArguments()}");
             var info = new ProcessStartInfo
             {
                 Arguments = this.GameArguments(),
-                FileName = this._gameExe,
-                WorkingDirectory = Path.GetDirectoryName(this._gameExe),
+                FileName = this.GameExe,
+                WorkingDirectory = Path.GetDirectoryName(this.GameExe),
                 UseShellExecute = false
             };
-            Process.Start(info);
+            try
+            {
+                Process.Start(info);
+            }
+            catch (Exception e)
+            {
+                this.Log().Error(e);
+                return;
+            }
+
             Thread.Sleep(TimeSpan.FromSeconds(5));
             Environment.Exit(0);
         }
@@ -99,6 +169,7 @@ namespace BannerLord.Common
             };
             Process.Start(info);
         }
+
         public void Save()
         {
             var launcherDataFile = Path.Combine(this._basePath, "LauncherData.xml");
@@ -109,8 +180,16 @@ namespace BannerLord.Common
             {
                 launcherData.SingleplayerData.ModDatas.Add(mod.UserModData);
             }
-            BackupFile(launcherDataFile);
-            launcherData.Save(launcherDataFile);
+
+            this.BackupFile(launcherDataFile);
+            try
+            {
+                launcherData.Save(launcherDataFile);
+            }
+            catch (Exception e)
+            {
+                this.Log().Error(e);
+            }
         }
 
         public void AlphaSort()
@@ -236,7 +315,7 @@ namespace BannerLord.Common
                         if (foundIdx > i)
                         {
                             isDown = true;
-                            found.LoadOrderConflicts.Add(new LoadOrderConflict { IsUp = true, DependsOnId = modEntry.Module.Id, DependsOnName = modEntry.DisplayName });
+                            found.LoadOrderConflicts.Add(new LoadOrderConflict { IsUp = true, DependsOn = modEntry.Module.Id });
                         }
                     }
 
@@ -246,8 +325,7 @@ namespace BannerLord.Common
                         IsUp = false,
                         IsDown = isDown,
                         IsMissing = isMissing,
-                        DependsOnId = dependsOn,
-                        DependsOnName = found?.DisplayName
+                        DependsOn = dependsOn,
                     };
                     modEntry.LoadOrderConflicts.Add(conflict);
                 }

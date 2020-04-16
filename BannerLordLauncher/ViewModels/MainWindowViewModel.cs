@@ -11,16 +11,19 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using GongSolutions.Wpf.DragDrop;
+using System.Linq;
+using Splat;
 
 namespace BannerLordLauncher.ViewModels
 {
-    using System.Linq;
 
     public sealed class MainWindowViewModel : ViewModelBase, IDropTarget
     {
         public ModManager Manager { get; }
         private readonly MainWindow _window;
         private int _selectedIndex = -1;
+
+        private bool _ignoredWarning;
 
         public int SelectedIndex
         {
@@ -30,6 +33,7 @@ namespace BannerLordLauncher.ViewModels
 
         public MainWindowViewModel(MainWindow window)
         {
+            this._ignoredWarning = true;
             this._window = window;
             this.Manager = new ModManager();
 
@@ -40,19 +44,92 @@ namespace BannerLordLauncher.ViewModels
             this.AlphaSort = ReactiveCommand.Create(() => this.Manager.AlphaSort());
             this.ReverseOrder = ReactiveCommand.Create(() => this.Manager.ReverseOrder());
             this.ExperimentalSort = ReactiveCommand.Create(() => this.Manager.TopologicalSort());
-            this.MoveToTop = ReactiveCommand.Create(() => this.Manager.MoveToTop(this.SelectedIndex), moveUp.Select(x => x));
-            this.MoveUp = ReactiveCommand.Create(() => this.Manager.MoveUp(this.SelectedIndex), moveUp.Select(x => x));
-            this.MoveDown = ReactiveCommand.Create(() => this.Manager.MoveDown(this.SelectedIndex), moveDown.Select(x => x));
-            this.MoveToBottom = ReactiveCommand.Create(() => this.Manager.MoveToBottom(this.SelectedIndex), moveDown.Select(x => x));
+            this.MoveToTop = ReactiveCommand.Create(this.MoveToTopCmd, moveUp.Select(x => x));
+            this.MoveUp = ReactiveCommand.Create(this.MoveUpCmd, moveUp.Select(x => x));
+            this.MoveDown = ReactiveCommand.Create(this.MoveDownCmd, moveDown.Select(x => x));
+            this.MoveToBottom = ReactiveCommand.Create(this.MoveToBottomCmd, moveDown.Select(x => x));
             this.CheckAll = ReactiveCommand.Create(() => this.Manager.CheckAll());
             this.UncheckAll = ReactiveCommand.Create(() => this.Manager.UncheckAll());
             this.InvertCheck = ReactiveCommand.Create(() => this.Manager.InvertCheck());
-            this.Run = ReactiveCommand.Create(() => this.Manager.RunGame());
+            this.Run = ReactiveCommand.Create(this.RunGame);
             this.Config = ReactiveCommand.Create(() => this.Manager.OpenConfig());
         }
 
+        private void MoveToTopCmd()
+        {
+            var idx = this._window.ModList.SelectedIndex;
+            var it = this.Manager.Mods[idx];
+            this._window.ModList.SelectedIndex = -1;
+            this.Manager.MoveToTop(idx);
+            this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
+        }
+
+        private void MoveUpCmd()
+        {
+            var idx = this._window.ModList.SelectedIndex;
+            var it = this.Manager.Mods[idx];
+            this._window.ModList.SelectedIndex = -1;
+            this.Manager.MoveUp(idx);
+            this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
+        }
+
+        private void MoveDownCmd()
+        {
+            var idx = this._window.ModList.SelectedIndex;
+            var it = this.Manager.Mods[idx];
+            this._window.ModList.SelectedIndex = -1;
+            this.Manager.MoveDown(idx);
+            this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
+        }
+
+        private void MoveToBottomCmd()
+        {
+            var idx = this._window.ModList.SelectedIndex;
+            var it = this.Manager.Mods[idx];
+            this._window.ModList.SelectedIndex = -1;
+            this.Manager.MoveToBottom(idx);
+            this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
+        }
+
+
         public void Initialize()
         {
+            var config = string.Empty;
+            if (!string.IsNullOrEmpty(this._window.Configuration.ConfigPath) && Directory.Exists(this._window.Configuration.ConfigPath))
+            {
+                config = this._window.Configuration.ConfigPath;
+            }
+            else
+            {
+                try
+                {
+                    var basePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                    if (Directory.Exists(basePath))
+                    {
+                        basePath = Path.Combine(basePath, "Mount and Blade II Bannerlord");
+                        if (Directory.Exists(basePath))
+                        {
+                            basePath = Path.Combine(basePath, "Configs");
+                            if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
+                            config = basePath;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.Log().Error(ex);
+                    config = null;
+                }
+            }
+
+            if (string.IsNullOrEmpty(config))
+            {
+                config = this.FindConfigFolder();
+            }
+
+            this._window.Configuration.ConfigPath = config;
+
+
             var game = string.Empty;
 
             if (!string.IsNullOrEmpty(this._window.Configuration.GamePath) &&
@@ -80,7 +157,7 @@ namespace BannerLordLauncher.ViewModels
                 this._window.Configuration.GamePath = game;
             }
 
-            this.Manager.Initialize(game);
+            this.Manager.Initialize(config, game);
         }
 
         private string FindGameFolder()
@@ -99,8 +176,55 @@ namespace BannerLordLauncher.ViewModels
             }
         }
 
-        public void SaveDialog()
+        private string FindConfigFolder()
         {
+            while (true)
+            {
+                var dialog = new VistaFolderBrowserDialog
+                {
+                    Description = "Select game config folder, in documents",
+                    UseDescriptionForTitle = true
+                };
+                var result = dialog.ShowDialog(this._window);
+                if (result is null) Environment.Exit(0);
+                if (!Directory.Exists(dialog.SelectedPath)) continue;
+                return dialog.SelectedPath;
+            }
+        }
+
+        private void RunGame()
+        {
+            if (this._ignoredWarning && this.Manager.Mods.Any(x => x.HasConflicts))
+            {
+                if (MessageBox.Show(
+                        this._window,
+                        "Your mod list has existing conflicts, are you sure that you want to run the game?",
+                        "Warning",
+                        MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+                {
+                    return;
+                }
+            }
+            if (!File.Exists(this.Manager.GameExe))
+            {
+                this.Log().Error($"{this.Manager.GameExe} could not be found");
+                return;
+            }
+
+            if (UACChecker.RequiresElevation(this.Manager.GameExe))
+            {
+                if (!UacUtil.IsElevated)
+                {
+                    MessageBox.Show("The application must be run as admin, to allow launching the game");
+                    return;
+                }
+            }
+            this.Manager.RunGame();
+        }
+
+        private void SaveDialog()
+        {
+            this._ignoredWarning = false;
             if (this.Manager.Mods.Any(x => x.HasConflicts))
             {
                 if (MessageBox.Show(
@@ -111,6 +235,8 @@ namespace BannerLordLauncher.ViewModels
                 {
                     return;
                 }
+
+                this._ignoredWarning = true;
             }
             this.Manager.Save();
         }
@@ -133,18 +259,14 @@ namespace BannerLordLauncher.ViewModels
         // ReSharper restore UnusedAutoPropertyAccessor.Global
         // ReSharper restore MemberCanBePrivate.Global
 
-        #region Implementation of IDropTarget
-
         public void DragOver(IDropInfo dropInfo)
         {
             var sourceItem = dropInfo.Data as ModEntry;
             var targetItem = dropInfo.TargetItem as ModEntry;
 
-            if (sourceItem != null && targetItem != null)
-            {
-                dropInfo.Effects = DragDropEffects.Move;
-                dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
-            }
+            if (sourceItem == null || targetItem == null) return;
+            dropInfo.Effects = DragDropEffects.Move;
+            dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
         }
 
         public void Drop(IDropInfo dropInfo)
@@ -160,24 +282,25 @@ namespace BannerLordLauncher.ViewModels
                 if (itemsControl.Items is IEditableCollectionView editableItems)
                 {
                     var newItemPlaceholderPosition = editableItems.NewItemPlaceholderPosition;
-                    if (newItemPlaceholderPosition == NewItemPlaceholderPosition.AtBeginning && insertIndex == 0)
+                    switch (newItemPlaceholderPosition)
                     {
-                        ++insertIndex;
-                    }
-                    else if (newItemPlaceholderPosition == NewItemPlaceholderPosition.AtEnd && insertIndex == itemsControl.Items.Count)
-                    {
-                        --insertIndex;
+                        case NewItemPlaceholderPosition.AtBeginning when insertIndex == 0:
+                            ++insertIndex;
+                            break;
+                        case NewItemPlaceholderPosition.AtEnd when insertIndex == itemsControl.Items.Count:
+                            --insertIndex;
+                            break;
                     }
                 }
             }
             var sourceItem = dropInfo.Data as ModEntry;
             var index = this.Manager.Mods.IndexOf(sourceItem);
             if (index < insertIndex) insertIndex--;
+            this._window.ModList.SelectedIndex = -1;
             this.Manager.Mods.Remove(sourceItem);
             this.Manager.Mods.Insert(insertIndex, sourceItem);
+            this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(sourceItem);
             this.Manager.Validate();
         }
-
-        #endregion
     }
 }
