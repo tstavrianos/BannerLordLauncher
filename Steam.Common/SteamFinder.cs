@@ -10,7 +10,7 @@ namespace Steam.Common
     /// <summary>
     /// Steam installation path and Steam games folder finder.
     /// </summary>
-    public sealed class SteamFinder: IEnableLogger
+    public sealed class SteamFinder : IEnableLogger
     {
         public string SteamPath { get; private set; }
         public string[] Libraries { get; private set; }
@@ -158,14 +158,21 @@ namespace Steam.Common
 
         private static string FindWindowsSteamPath()
         {
-           var regPath = Environment.Is64BitOperatingSystem
-                ? @"SOFTWARE\Wow6432Node\Valve\Steam"
-                : @"SOFTWARE\Valve\Steam";
-            var subRegKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(regPath);
-            var path = subRegKey?.GetValue("InstallPath").ToString()
-                .Replace('/', '\\'); // not actually required, just for consistency's sake
+            var regPath = Environment.Is64BitOperatingSystem
+                 ? @"SOFTWARE\Wow6432Node\Valve\Steam"
+                 : @"SOFTWARE\Valve\Steam";
+            try
+            {
+                var subRegKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(regPath);
+                var path = subRegKey?.GetValue("InstallPath").ToString()
+                    .Replace('/', '\\'); // not actually required, just for consistency's sake
 
-            return Directory.Exists(path) ? path : null;
+                return Directory.Exists(path) ? path : null;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private static string FindUnixSteamPath()
