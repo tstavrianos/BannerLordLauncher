@@ -29,6 +29,11 @@ namespace BannerLord.Common
             this._modulePath = Path.Combine(game, "Modules");
             this.GameExe = Path.Combine(game, "bin", "Win64_Shipping_Client", "Bannerlord.exe");
             var modulesFolder = Path.Combine(game, "Modules");
+            if (!Directory.Exists(modulesFolder))
+            {
+                this.Log().Error($"{modulesFolder} does not exist");
+                return;
+            }
             var modules = Directory.EnumerateDirectories(modulesFolder, "*", SearchOption.TopDirectoryOnly).Select(dir => Module.Load(this, Path.GetFileName(dir), game)).Where(module => module != null).ToList();
 
             if (launcherData.SingleplayerData?.ModDatas != null)
