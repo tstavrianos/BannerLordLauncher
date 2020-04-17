@@ -139,6 +139,21 @@ namespace BannerLord.Common
                         if (File.Exists(file)) yield return file;
                     }
                 }
+                foreach (var subModule in module.Module.DelayedSubModules)
+                {
+
+                    foreach (var assembly in subModule.Assemblies ?? Enumerable.Empty<string>())
+                    {
+                        var file = Path.Combine(path, assembly);
+                        if (File.Exists(file)) yield return file;
+                    }
+
+                    if (!string.IsNullOrEmpty(subModule.DLLName))
+                    {
+                        var file = Path.Combine(path, subModule.DLLName);
+                        if (File.Exists(file)) yield return file;
+                    }
+                }
             }
         }
 

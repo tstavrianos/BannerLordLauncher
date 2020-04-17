@@ -18,11 +18,13 @@ namespace BannerLord.Common.Xml
         public bool MultiplayerModule { get; set; }
         public List<string> DependedModules { get; set; }
         public List<SubModule> SubModules { get; set; }
+        public List<SubModule> DelayedSubModules { get; set; }
 
         public Module()
         {
             this.DependedModules = new List<string>();
             this.SubModules = new List<SubModule>();
+            this.DelayedSubModules = new List<SubModule>();
         }
 
         public static Module Load(ModManager manager, string directoryName, string gamePath)
@@ -82,6 +84,17 @@ namespace BannerLord.Common.Xml
                     {
                         var subModule = SubModule.Load(subModulesList[i]);
                         if (subModule != null) ret.SubModules.Add(subModule);
+                    }
+                }
+
+                var delayedSubModules = module.SelectSingleNode("DelayedSubModules");
+                if (delayedSubModules != null)
+                {
+                    var subModulesList = delayedSubModules.SelectNodes("SubModule");
+                    for (var i = 0; i < subModulesList.Count; i++)
+                    {
+                        var subModule = SubModule.Load(subModulesList[i]);
+                        if (subModule != null) ret.DelayedSubModules.Add(subModule);
                     }
                 }
 
