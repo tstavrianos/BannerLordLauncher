@@ -7,6 +7,7 @@ using System.Windows;
 
 namespace BannerLordLauncher.Views
 {
+    using Serilog;
 
     public partial class MainWindow
     {
@@ -58,7 +59,16 @@ namespace BannerLordLauncher.Views
             base.OnClosing(e);
             this.Configuration.Placement = this.GetPlacement();
             var settings = new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, Formatting = Formatting.Indented };
-            File.WriteAllText(this._configurationFilePath, JsonConvert.SerializeObject(this.Configuration, settings));
+            try
+            {
+                File.WriteAllText(
+                    this._configurationFilePath,
+                    JsonConvert.SerializeObject(this.Configuration, settings));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error writing the configuration to disk");
+            }
         }
 
         private void RefreshMaximizeRestoreButton()
