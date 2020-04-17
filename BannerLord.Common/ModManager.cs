@@ -9,6 +9,7 @@ using System.Collections.Generic;
 
 namespace BannerLord.Common
 {
+    using Trinet.Core.IO.Ntfs;
 
     public sealed class ModManager : IModManager
     {
@@ -161,7 +162,25 @@ namespace BannerLord.Common
 
             foreach (var dll in this.GetAssemblies().Distinct())
             {
-                UnblockFiles.ZoneHelper.Remove(dll, this);
+                try
+                {
+                    var fi = new FileInfo(dll);
+                    if (!fi.Exists) continue;
+                    try
+                    {
+                        if (!fi.AlternateDataStreamExists("Zone.Identifier")) continue;
+                        var s = fi.GetAlternateDataStream("Zone.Identifier", FileMode.Open);
+                        s.Delete();
+                    }
+                    catch (Exception e)
+                    {
+                        this.Log().Error(e);
+                    }
+                }
+                catch
+                {
+                    //
+                }
             }
             this.Log().Warn($"Trying to execute: {this.GameExe} {this.GameArguments()}");
             var info = new ProcessStartInfo
@@ -181,6 +200,7 @@ namespace BannerLord.Common
                 this.Log().Error(e);
                 return false;
             }
+
 
             return true;
         }
