@@ -24,6 +24,11 @@ namespace BannerLord.Common
         {
             this._runValidation = false;
             this._basePath = config;
+            if (!Directory.Exists(this._basePath))
+            {
+                this.Log().Error($"{this._basePath} does not exist");
+                return;
+            }
             if (!Directory.Exists(Path.Combine(this._basePath, "BannerLordLauncher Backups"))) Directory.CreateDirectory(Path.Combine(this._basePath, "BannerLordLauncher Backups"));
             var launcherData = UserData.Load(this, Path.Combine(this._basePath, "LauncherData.xml")) ?? new UserData();
             this._modulePath = Path.Combine(game, "Modules");
@@ -74,6 +79,7 @@ namespace BannerLord.Common
         private void BackupFile(string file)
         {
             if (!File.Exists(file)) return;
+            if (!Directory.Exists(Path.Combine(this._basePath, "BannerLordLauncher Backups"))) Directory.CreateDirectory(Path.Combine(this._basePath, "BannerLordLauncher Backups"));
             var ext = Path.GetExtension(file);
             var i = 0;
             var newFile = Path.ChangeExtension(file, $"{ext}.{i:D3}");
