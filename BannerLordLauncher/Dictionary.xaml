@@ -176,7 +176,7 @@
             <iconPacks:PackIconMaterial  Grid.Column="1" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemNative}" Kind="AccountTie" Visibility="{Binding Module.Official, Converter={StaticResource BoolToVisConverter}}" ToolTip="Official mod"/>
             <iconPacks:PackIconMaterial  Grid.Column="1" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemCommunity}" Kind="AccountGroup" Visibility="{Binding Module.Official, Converter={StaticResource BoolToVisConverterInv}}" ToolTip="Community mod"/>
             <TextBlock Focusable="False" Grid.Column="2" Text="{Binding DisplayName}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="/Assets/Fonts/#Candara" FontSize="15" VerticalAlignment="Center"/>
-            <TextBlock Focusable="False" Grid.Column="3" Text="{Binding Module.Version}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="/Assets/Fonts/#Candara" FontSize="15" VerticalAlignment="Center"/>
+            <TextBlock Focusable="False" Grid.Column="3" Text="{Binding Module.Version}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="Consolas" FontSize="15" VerticalAlignment="Center"/>
             <iconPacks:PackIconMaterial Grid.Column="4" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemCommunity}" Kind="AlertCircleOutline" Visibility="{Binding HasConflicts, Converter={StaticResource BoolToVisConverter}}" ToolTip="{Binding Conflicts}"/>
         </Grid>
     </DataTemplate>
