@@ -16,8 +16,9 @@ using Splat;
 
 namespace BannerLordLauncher.ViewModels
 {
+    using MessageBox = System.Windows.MessageBox;
 
-    public sealed class MainWindowViewModel : ViewModelBase, IDropTarget
+    public sealed class MainWindowViewModel : ViewModelBase, IDropTarget, IModManagerClient
     {
         public ModManager Manager { get; }
         private readonly MainWindow _window;
@@ -31,16 +32,34 @@ namespace BannerLordLauncher.ViewModels
             set => this.RaiseAndSetIfChanged(ref this._selectedIndex, value);
         }
 
+        // ReSharper disable MemberCanBePrivate.Global
+        // ReSharper disable UnusedAutoPropertyAccessor.Global
+        public ICommand Config { get; }
+        public ICommand Run { get; }
+        public ICommand Save { get; }
+        public ICommand AlphaSort { get; }
+        public ICommand ReverseOrder { get; }
+        public ICommand ExperimentalSort { get; }
+        public ICommand MoveToTop { get; }
+        public ICommand MoveUp { get; }
+        public ICommand MoveDown { get; }
+        public ICommand MoveToBottom { get; }
+        public ICommand CheckAll { get; }
+        public ICommand UncheckAll { get; }
+        public ICommand InvertCheck { get; }
+        // ReSharper restore UnusedAutoPropertyAccessor.Global
+        // ReSharper restore MemberCanBePrivate.Global
+
         public MainWindowViewModel(MainWindow window)
         {
             this._ignoredWarning = true;
             this._window = window;
-            this.Manager = new ModManager();
+            this.Manager = new ModManager(this);
 
             var moveUp = this.WhenAnyValue(x => x.SelectedIndex).Select(x => x > 0);
             var moveDown = this.WhenAnyValue(x => x.SelectedIndex).Select(x => x >= 0 && x < this.Manager.Mods.Count - 1);
 
-            this.Save = ReactiveCommand.Create(this.SaveDialog);
+            this.Save = ReactiveCommand.Create(this.SaveCmd);
             this.AlphaSort = ReactiveCommand.Create(() => this.Manager.AlphaSort());
             this.ReverseOrder = ReactiveCommand.Create(() => this.Manager.ReverseOrder());
             this.ExperimentalSort = ReactiveCommand.Create(() => this.Manager.TopologicalSort());
@@ -48,11 +67,27 @@ namespace BannerLordLauncher.ViewModels
             this.MoveUp = ReactiveCommand.Create(this.MoveUpCmd, moveUp.Select(x => x));
             this.MoveDown = ReactiveCommand.Create(this.MoveDownCmd, moveDown.Select(x => x));
             this.MoveToBottom = ReactiveCommand.Create(this.MoveToBottomCmd, moveDown.Select(x => x));
-            this.CheckAll = ReactiveCommand.Create(() => this.Manager.CheckAll());
-            this.UncheckAll = ReactiveCommand.Create(() => this.Manager.UncheckAll());
-            this.InvertCheck = ReactiveCommand.Create(() => this.Manager.InvertCheck());
-            this.Run = ReactiveCommand.Create(this.RunGame);
+            this.CheckAll = ReactiveCommand.Create(this.CheckAllCmd);
+            this.UncheckAll = ReactiveCommand.Create(this.UncheckAllCmd);
+            this.InvertCheck = ReactiveCommand.Create(this.InvertCheckCmd);
+            this.Run = ReactiveCommand.Create(this.RunCmd);
             this.Config = ReactiveCommand.Create(() => this.Manager.OpenConfig());
+        }
+
+        private void CheckAllCmd()
+        {
+            if (this.Manager.CheckAll(out var error)) return;
+            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
+        }
+        private void UncheckAllCmd()
+        {
+            if (this.Manager.UncheckAll(out var error)) return;
+            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
+        }
+        private void InvertCheckCmd()
+        {
+            if (this.Manager.InvertCheck(out var error)) return;
+            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
         }
 
         private void MoveToTopCmd()
@@ -60,7 +95,12 @@ namespace BannerLordLauncher.ViewModels
             var idx = this._window.ModList.SelectedIndex;
             var it = this.Manager.Mods[idx];
             this._window.ModList.SelectedIndex = -1;
-            this.Manager.MoveToTop(idx);
+            if (!this.Manager.MoveToTop(idx, out var errorMessage))
+            {
+                this._window.ModList.SelectedIndex = idx;
+                if (!string.IsNullOrEmpty(errorMessage)) MessageBox.Show(errorMessage);
+                return;
+            }
             this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
         }
 
@@ -69,7 +109,12 @@ namespace BannerLordLauncher.ViewModels
             var idx = this._window.ModList.SelectedIndex;
             var it = this.Manager.Mods[idx];
             this._window.ModList.SelectedIndex = -1;
-            this.Manager.MoveUp(idx);
+            if (!this.Manager.MoveUp(idx, out var errorMessage))
+            {
+                this._window.ModList.SelectedIndex = idx;
+                if (!string.IsNullOrEmpty(errorMessage)) MessageBox.Show(errorMessage);
+                return;
+            }
             this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
         }
 
@@ -78,7 +123,12 @@ namespace BannerLordLauncher.ViewModels
             var idx = this._window.ModList.SelectedIndex;
             var it = this.Manager.Mods[idx];
             this._window.ModList.SelectedIndex = -1;
-            this.Manager.MoveDown(idx);
+            if (!this.Manager.MoveDown(idx, out var errorMessage))
+            {
+                this._window.ModList.SelectedIndex = idx;
+                if (!string.IsNullOrEmpty(errorMessage)) MessageBox.Show(errorMessage);
+                return;
+            }
             this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
         }
 
@@ -87,10 +137,14 @@ namespace BannerLordLauncher.ViewModels
             var idx = this._window.ModList.SelectedIndex;
             var it = this.Manager.Mods[idx];
             this._window.ModList.SelectedIndex = -1;
-            this.Manager.MoveToBottom(idx);
+            if (!this.Manager.MoveToBottom(idx, out var errorMessage))
+            {
+                this._window.ModList.SelectedIndex = idx;
+                if (!string.IsNullOrEmpty(errorMessage)) MessageBox.Show(errorMessage);
+                return;
+            }
             this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
         }
-
 
         public void Initialize()
         {
@@ -157,7 +211,8 @@ namespace BannerLordLauncher.ViewModels
                 this._window.Configuration.GamePath = game;
             }
 
-            this.Manager.Initialize(config, game);
+            if (this.Manager.Initialize(config, game, out var error)) return;
+            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
         }
 
         private string FindGameFolder()
@@ -192,72 +247,19 @@ namespace BannerLordLauncher.ViewModels
             }
         }
 
-        private void RunGame()
+        private void RunCmd()
         {
-            if (this._ignoredWarning && this.Manager.Mods.Any(x => x.HasConflicts))
-            {
-                if (MessageBox.Show(
-                        this._window,
-                        "Your mod list has existing conflicts, are you sure that you want to run the game?",
-                        "Warning",
-                        MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
-                {
-                    return;
-                }
-            }
-            if (!File.Exists(this.Manager.GameExe))
-            {
-                this.Log().Error($"{this.Manager.GameExe} could not be found");
-                return;
-            }
-
-            if (UACChecker.RequiresElevation(this.Manager.GameExe))
-            {
-                if (!UacUtil.IsElevated)
-                {
-                    MessageBox.Show("The application must be run as admin, to allow launching the game");
-                    return;
-                }
-            }
-            this.Manager.RunGame();
+            if (this.Manager.Run(out var error)) return;
+            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
+            Application.Current.Shutdown();
         }
 
-        private void SaveDialog()
+        private void SaveCmd()
         {
-            this._ignoredWarning = false;
-            if (this.Manager.Mods.Any(x => x.HasConflicts))
-            {
-                if (MessageBox.Show(
-                        this._window,
-                        "Your mod list has existing conflicts, are you sure that you want to save it?",
-                        "Warning",
-                        MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
-                {
-                    return;
-                }
 
-                this._ignoredWarning = true;
-            }
-            this.Manager.Save();
+            if (this.Manager.Save(out var error)) return;
+            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
         }
-
-        // ReSharper disable MemberCanBePrivate.Global
-        // ReSharper disable UnusedAutoPropertyAccessor.Global
-        public ICommand Config { get; }
-        public ICommand Run { get; }
-        public ICommand Save { get; }
-        public ICommand AlphaSort { get; }
-        public ICommand ReverseOrder { get; }
-        public ICommand ExperimentalSort { get; }
-        public ICommand MoveToTop { get; }
-        public ICommand MoveUp { get; }
-        public ICommand MoveDown { get; }
-        public ICommand MoveToBottom { get; }
-        public ICommand CheckAll { get; }
-        public ICommand UncheckAll { get; }
-        public ICommand InvertCheck { get; }
-        // ReSharper restore UnusedAutoPropertyAccessor.Global
-        // ReSharper restore MemberCanBePrivate.Global
 
         public void DragOver(IDropInfo dropInfo)
         {
@@ -301,6 +303,97 @@ namespace BannerLordLauncher.ViewModels
             this.Manager.Mods.Insert(insertIndex, sourceItem);
             this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(sourceItem);
             this.Manager.Validate();
+        }
+
+        public bool CanInitialize(string configPath, string gamePath)
+        {
+            return true;
+        }
+
+        public bool CanRun()
+        {
+            if (this._ignoredWarning && this.Manager.Mods.Any(x => x.HasConflicts))
+            {
+                if (MessageBox.Show(
+                        this._window,
+                        "Your mod list has existing conflicts, are you sure that you want to run the game?",
+                        "Warning",
+                        MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+                {
+                    return false;
+                }
+            }
+            if (!File.Exists(this.Manager.GameExe))
+            {
+                this.Log().Error($"{this.Manager.GameExe} could not be found");
+                return false;
+            }
+
+            if (UACChecker.RequiresElevation(this.Manager.GameExe))
+            {
+                if (!UacUtil.IsElevated)
+                {
+                    MessageBox.Show("The application must be run as admin, to allow launching the game");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public bool CanSave()
+        {
+            this._ignoredWarning = false;
+            if (this.Manager.Mods.Any(x => x.HasConflicts))
+            {
+                if (MessageBox.Show(
+                        this._window,
+                        "Your mod list has existing conflicts, are you sure that you want to save it?",
+                        "Warning",
+                        MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+                {
+                    return false;
+                }
+
+                this._ignoredWarning = true;
+            }
+
+            return true;
+        }
+
+        public bool CanMoveToTop(int idx)
+        {
+            return idx > 0;
+        }
+
+        public bool CanMoveUp(int idx)
+        {
+            return idx > 0;
+        }
+
+        public bool CanMoveDown(int idx)
+        {
+            return idx >= 0 && idx < this.Manager.Mods.Count - 1;
+        }
+
+        public bool CanMoveToBottom(int idx)
+        {
+            return idx >= 0 && idx < this.Manager.Mods.Count - 1;
+        }
+
+        public bool CanCheckAll()
+        {
+            return this.Manager.Mods.Count > 0;
+        }
+
+        public bool CanUncheckAll()
+        {
+            return this.Manager.Mods.Count > 0;
+        }
+
+        public bool CanInvertCheck()
+        {
+            return this.Manager.Mods.Count > 0;
         }
     }
 }

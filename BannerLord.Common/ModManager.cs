@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using BannerLord.Common.Xml;
 using Splat;
 using System.Collections.Generic;
@@ -11,7 +10,7 @@ using System.Collections.Generic;
 namespace BannerLord.Common
 {
 
-    public sealed class ModManager : IEnableLogger
+    public sealed class ModManager : IModManager
     {
         public ObservableCollection<ModEntry> Mods { get; } = new ObservableCollection<ModEntry>();
         private string _basePath;
@@ -20,14 +19,25 @@ namespace BannerLord.Common
         private string _modulePath;
         public string GameExe { get; private set; }
 
-        public void Initialize(string config, string game)
+        private readonly IModManagerClient _client;
+
+        public ModManager(IModManagerClient client)
         {
+            this._client = client;
+        }
+
+        public bool Initialize(string config, string game, out string errorMessage)
+        {
+            errorMessage = default;
+            if (!this._client.CanInitialize(config, game)) return false;
+
             this._runValidation = false;
             this._basePath = config;
             if (!Directory.Exists(this._basePath))
             {
-                this.Log().Error($"{this._basePath} does not exist");
-                return;
+                errorMessage = $"{this._basePath} does not exist";
+                this.Log().Error(errorMessage);
+                return false;
             }
             if (!Directory.Exists(Path.Combine(this._basePath, "BannerLordLauncher Backups"))) Directory.CreateDirectory(Path.Combine(this._basePath, "BannerLordLauncher Backups"));
             var launcherData = UserData.Load(this, Path.Combine(this._basePath, "LauncherData.xml")) ?? new UserData();
@@ -36,8 +46,9 @@ namespace BannerLord.Common
             var modulesFolder = Path.Combine(game, "Modules");
             if (!Directory.Exists(modulesFolder))
             {
-                this.Log().Error($"{modulesFolder} does not exist");
-                return;
+                errorMessage = $"{modulesFolder} does not exist";
+                this.Log().Error(errorMessage);
+                return false;
             }
             var modules = Directory.EnumerateDirectories(modulesFolder, "*", SearchOption.TopDirectoryOnly).Select(dir => Module.Load(this, Path.GetFileName(dir), game)).Where(module => module != null).ToList();
 
@@ -56,7 +67,7 @@ namespace BannerLord.Common
                     modules.Remove(module);
                     var modEntry = new ModEntry { Module = module, UserModData = mod };
                     this.Mods.Add(modEntry);
-                    if (modEntry.Module.Official == true) modEntry.IsChecked = true;
+                    if (modEntry.Module.Official) modEntry.IsChecked = true;
                 }
             }
 
@@ -65,11 +76,12 @@ namespace BannerLord.Common
                 if (this.Mods.Any(x => x.Module.Id.Equals(module.Id, StringComparison.OrdinalIgnoreCase))) continue;
                 var modEntry = new ModEntry { Module = module, UserModData = new UserModData(module.Id, false) };
                 this.Mods.Add(modEntry);
-                if (modEntry.Module.Official == true) modEntry.IsChecked = true;
+                if (modEntry.Module.Official) modEntry.IsChecked = true;
             }
 
             this._runValidation = true;
             this.Validate();
+            return true;
         }
 
         private string EnabledMods() => "_MODULES_" + string.Join("", this.Mods.Where(x => x.UserModData.IsSelected).Select(x => "*" + x.Module.Id)) + "*_MODULES_";
@@ -129,17 +141,22 @@ namespace BannerLord.Common
             }
         }
 
-        public void RunGame()
+        public bool Run(out string errorMessage)
         {
+            errorMessage = default;
+            if (!this._client.CanRun()) return false;
+
             if (string.IsNullOrEmpty(this.GameExe))
             {
-                this.Log().Error("Game executable could not be detected");
-                return;
+                errorMessage = "Game executable could not be detected";
+                this.Log().Error(errorMessage);
+                return false;
             }
             if (!File.Exists(this.GameExe))
             {
-                this.Log().Error($"{this.GameExe} could not be found");
-                return;
+                errorMessage = $"{this.GameExe} could not be found";
+                this.Log().Error(errorMessage);
+                return false;
             }
 
             foreach (var dll in this.GetAssemblies().Distinct())
@@ -160,12 +177,12 @@ namespace BannerLord.Common
             }
             catch (Exception e)
             {
+                errorMessage = "Exception when trying to run the game. See the log for details";
                 this.Log().Error(e);
-                return;
+                return false;
             }
 
-            Thread.Sleep(TimeSpan.FromSeconds(5));
-            Environment.Exit(0);
+            return true;
         }
 
         public void OpenConfig()
@@ -181,8 +198,10 @@ namespace BannerLord.Common
             Process.Start(info);
         }
 
-        public void Save()
+        public bool Save(out string errorMessage)
         {
+            errorMessage = default;
+            if (!this._client.CanSave()) return false;
             var launcherDataFile = Path.Combine(this._basePath, "LauncherData.xml");
             var launcherData = UserData.Load(this, launcherDataFile) ?? new UserData();
             if (launcherData.SingleplayerData == null) launcherData.SingleplayerData = new UserGameTypeData();
@@ -199,62 +218,77 @@ namespace BannerLord.Common
             }
             catch (Exception e)
             {
+                errorMessage = "Exception when trying to save the mod list. See the log for details";
                 this.Log().Error(e);
+                return false;
             }
+
+            return true;
         }
 
-        public void AlphaSort()
+        public bool MoveToTop(int selectedIndex, out string errorMessage)
         {
-            this._runValidation = false;
-            var items = this.Mods.OrderBy(x => x.DisplayName).ToArray();
-            this.Mods.Clear();
-            foreach (var item in items)
+            errorMessage = default;
+            if (!this._client.CanMoveToTop(selectedIndex)) return false;
+            if (selectedIndex <= 0 || selectedIndex >= this.Mods.Count)
             {
-                this.Mods.Add(item);
+                errorMessage = "Index out of bounds";
+                return false;
             }
-            this._runValidation = true;
-            this.Validate();
-        }
-
-        public void ReverseOrder()
-        {
-            this._runValidation = false;
-            for (var i = 0; i < this.Mods.Count; i++)
-                this.Mods.Move(this.Mods.Count - 1, i);
-            this._runValidation = true;
-            this.Validate();
-        }
-
-        public void MoveToTop(int selectedIndex)
-        {
-            if (selectedIndex <= 0 || selectedIndex >= this.Mods.Count) return;
             this.Mods.Move(selectedIndex, 0);
             this.Validate();
+            return true;
         }
 
-        public void MoveUp(int selectedIndex)
+        public bool MoveUp(int selectedIndex, out string errorMessage)
         {
-            if (selectedIndex <= 0 || selectedIndex >= this.Mods.Count) return;
+            errorMessage = default;
+            if (!this._client.CanMoveUp(selectedIndex)) return false;
+            if (selectedIndex <= 0 || selectedIndex >= this.Mods.Count)
+            {
+                errorMessage = "Index out of bounds";
+                return false;
+            }
+
             this.Mods.Move(selectedIndex, selectedIndex - 1);
             this.Validate();
+            return true;
         }
 
-        public void MoveDown(int selectedIndex)
+        public bool MoveDown(int selectedIndex, out string errorMessage)
         {
-            if (selectedIndex < 0 || selectedIndex >= this.Mods.Count - 1) return;
+            errorMessage = default;
+            if (!this._client.CanMoveDown(selectedIndex)) return false;
+            if (selectedIndex < 0 || selectedIndex >= this.Mods.Count - 1)
+            {
+                errorMessage = "Index out of bounds";
+                return false;
+            }
+
             this.Mods.Move(selectedIndex, selectedIndex + 1);
             this.Validate();
+            return true;
         }
 
-        public void MoveToBottom(int selectedIndex)
+        public bool MoveToBottom(int selectedIndex, out string errorMessage)
         {
-            if (selectedIndex < 0 || selectedIndex >= this.Mods.Count - 1) return;
+            errorMessage = default;
+            if (!this._client.CanMoveToBottom(selectedIndex)) return false;
+            if (selectedIndex < 0 || selectedIndex >= this.Mods.Count - 1)
+            {
+                errorMessage = "Index out of bounds";
+                return false;
+            }
+
             this.Mods.Move(selectedIndex, this.Mods.Count - 1);
             this.Validate();
+            return true;
         }
 
-        public void CheckAll()
+        public bool CheckAll(out string errorMessage)
         {
+            errorMessage = default;
+            if (!this._client.CanCheckAll()) return false;
             this._runValidation = false;
             foreach (var modEntry in this.Mods.Where(x => x.IsCheckboxEnabled))
             {
@@ -262,10 +296,13 @@ namespace BannerLord.Common
             }
             this._runValidation = true;
             this.Validate();
+            return true;
         }
 
-        public void UncheckAll()
+        public bool UncheckAll(out string errorMessage)
         {
+            errorMessage = default;
+            if (!this._client.CanUncheckAll()) return false;
             this._runValidation = false;
             foreach (var modEntry in this.Mods.Where(x => x.IsCheckboxEnabled))
             {
@@ -273,10 +310,13 @@ namespace BannerLord.Common
             }
             this._runValidation = true;
             this.Validate();
+            return true;
         }
 
-        public void InvertCheck()
+        public bool InvertCheck(out string errorMessage)
         {
+            errorMessage = default;
+            if (!this._client.CanInvertCheck()) return false;
             this._runValidation = false;
             foreach (var modEntry in this.Mods.Where(x => x.IsCheckboxEnabled))
             {
@@ -284,23 +324,7 @@ namespace BannerLord.Common
             }
             this._runValidation = true;
             this.Validate();
-        }
-
-        public void TopologicalSort()
-        {
-            this._runValidation = false;
-            try
-            {
-                var sorted1 = this.Mods.TopologicalSort(x => x.Module.DependedModules?.Select(d => this.Mods.FirstOrDefault(y => string.Equals(y.Module.Id, d, StringComparison.OrdinalIgnoreCase))).Where(m => m != null) ?? Enumerable.Empty<ModEntry>()).ToArray();
-                this.Mods.Clear();
-                foreach (var entry in sorted1) this.Mods.Add(entry);
-            }
-            catch (Exception e)
-            {
-                this.Log().Error(e, "TopologicalSort");
-            }
-            this._runValidation = true;
-            this.Validate();
+            return true;
         }
 
         public void Validate()
@@ -341,6 +365,45 @@ namespace BannerLord.Common
                     modEntry.LoadOrderConflicts.Add(conflict);
                 }
             }
+        }
+
+        public void AlphaSort()
+        {
+            this._runValidation = false;
+            var items = this.Mods.OrderBy(x => x.DisplayName).ToArray();
+            this.Mods.Clear();
+            foreach (var item in items)
+            {
+                this.Mods.Add(item);
+            }
+            this._runValidation = true;
+            this.Validate();
+        }
+
+        public void ReverseOrder()
+        {
+            this._runValidation = false;
+            for (var i = 0; i < this.Mods.Count; i++)
+                this.Mods.Move(this.Mods.Count - 1, i);
+            this._runValidation = true;
+            this.Validate();
+        }
+
+        public void TopologicalSort()
+        {
+            this._runValidation = false;
+            try
+            {
+                var sorted1 = this.Mods.TopologicalSort(x => x.Module.DependedModules?.Select(d => this.Mods.FirstOrDefault(y => string.Equals(y.Module.Id, d, StringComparison.OrdinalIgnoreCase))).Where(m => m != null) ?? Enumerable.Empty<ModEntry>()).ToArray();
+                this.Mods.Clear();
+                foreach (var entry in sorted1) this.Mods.Add(entry);
+            }
+            catch (Exception e)
+            {
+                this.Log().Error(e, "TopologicalSort");
+            }
+            this._runValidation = true;
+            this.Validate();
         }
     }
 }
