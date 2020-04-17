@@ -51,12 +51,8 @@ namespace BannerLordLauncher.ViewModels
         // ReSharper restore UnusedAutoPropertyAccessor.Global
         // ReSharper restore MemberCanBePrivate.Global
 
-        private readonly GitHubClient _github;
-
         public MainWindowViewModel(MainWindow window)
         {
-            this._github = new GitHubClient(new ProductHeaderValue("BannerLordLauncher"));
-
             this._ignoredWarning = true;
             this._window = window;
             this.Manager = new ModManager(this);
@@ -96,14 +92,23 @@ namespace BannerLordLauncher.ViewModels
 
         private async void CheckForUpdates()
         {
-            var currentVersion = typeof(MainWindowViewModel).Assembly.GetName().Version;
-            var result = await this._github.Repository.Release.GetAll("tstavrianos", "BannerLordLauncher").ConfigureAwait(false);
-            var latestRelease = result.OrderByDescending(x => x.CreatedAt).FirstOrDefault();
-            if (latestRelease == null) return;
-            var latestReleaseVersion = new Version(latestRelease.TagName);
-            if (latestReleaseVersion <= currentVersion) return;
-            var message = $"Version {latestReleaseVersion} is available to download";
-            this.SafeMessage(message);
+            try
+            {
+                var github = new GitHubClient(new ProductHeaderValue("BannerLordLauncher"));
+                var currentVersion = typeof(MainWindowViewModel).Assembly.GetName().Version;
+                var result = await github.Repository.Release.GetAll("tstavrianos", "BannerLordLauncher")
+                                 .ConfigureAwait(false);
+                var latestRelease = result.OrderByDescending(x => x.CreatedAt).FirstOrDefault();
+                if (latestRelease == null) return;
+                var latestReleaseVersion = new Version(latestRelease.TagName);
+                if (latestReleaseVersion <= currentVersion) return;
+                var message = $"Version {latestReleaseVersion} is available to download";
+                this.SafeMessage(message);
+            }
+            catch (Exception e)
+            {
+                this.Log().Error(e);
+            }
         }
 
         private void CheckAllCmd()
