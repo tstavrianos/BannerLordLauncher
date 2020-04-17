@@ -13,10 +13,13 @@ using System.Windows.Controls;
 using GongSolutions.Wpf.DragDrop;
 using System.Linq;
 using Splat;
+using Octokit;
+using Application = System.Windows.Application;
 
 namespace BannerLordLauncher.ViewModels
 {
-    using MessageBox = System.Windows.MessageBox;
+    using System.Threading.Tasks;
+    using System.Windows.Threading;
 
     public sealed class MainWindowViewModel : ViewModelBase, IDropTarget, IModManagerClient
     {
@@ -50,8 +53,12 @@ namespace BannerLordLauncher.ViewModels
         // ReSharper restore UnusedAutoPropertyAccessor.Global
         // ReSharper restore MemberCanBePrivate.Global
 
+        private readonly GitHubClient _github;
+
         public MainWindowViewModel(MainWindow window)
         {
+            this._github = new GitHubClient(new ProductHeaderValue("BannerLordLauncher"));
+
             this._ignoredWarning = true;
             this._window = window;
             this.Manager = new ModManager(this);
@@ -74,20 +81,47 @@ namespace BannerLordLauncher.ViewModels
             this.Config = ReactiveCommand.Create(() => this.Manager.OpenConfig());
         }
 
+        private void SafeMessage(string message)
+        {
+            if (Application.Current.Dispatcher.CheckAccess())
+            {
+                MessageBox.Show(this._window, message);
+            }
+            else
+            {
+                Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+                    {
+                        MessageBox.Show(this._window, message);
+                    }));
+            }
+        }
+
+        private async void CheckForUpdates()
+        {
+            var currentVersion = typeof(MainWindowViewModel).Assembly.GetName().Version;
+            var result = await this._github.Repository.Release.GetAll("tstavrianos", "BannerLordLauncher").ConfigureAwait(false);
+            var latestRelease = result.OrderByDescending(x => x.CreatedAt).FirstOrDefault();
+            if (latestRelease == null) return;
+            var latestReleaseVersion = new Version(latestRelease.TagName);
+            if (latestReleaseVersion <= currentVersion) return;
+            var message = $"Version {latestReleaseVersion} is available to download";
+            this.SafeMessage(message);
+        }
+
         private void CheckAllCmd()
         {
             if (this.Manager.CheckAll(out var error)) return;
-            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
+            if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
         }
         private void UncheckAllCmd()
         {
             if (this.Manager.UncheckAll(out var error)) return;
-            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
+            if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
         }
         private void InvertCheckCmd()
         {
             if (this.Manager.InvertCheck(out var error)) return;
-            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
+            if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
         }
 
         private void MoveToTopCmd()
@@ -98,7 +132,7 @@ namespace BannerLordLauncher.ViewModels
             if (!this.Manager.MoveToTop(idx, out var errorMessage))
             {
                 this._window.ModList.SelectedIndex = idx;
-                if (!string.IsNullOrEmpty(errorMessage)) MessageBox.Show(errorMessage);
+                if (!string.IsNullOrEmpty(errorMessage)) this.SafeMessage(errorMessage);
                 return;
             }
             this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
@@ -112,7 +146,7 @@ namespace BannerLordLauncher.ViewModels
             if (!this.Manager.MoveUp(idx, out var errorMessage))
             {
                 this._window.ModList.SelectedIndex = idx;
-                if (!string.IsNullOrEmpty(errorMessage)) MessageBox.Show(errorMessage);
+                if (!string.IsNullOrEmpty(errorMessage)) this.SafeMessage(errorMessage);
                 return;
             }
             this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
@@ -126,7 +160,7 @@ namespace BannerLordLauncher.ViewModels
             if (!this.Manager.MoveDown(idx, out var errorMessage))
             {
                 this._window.ModList.SelectedIndex = idx;
-                if (!string.IsNullOrEmpty(errorMessage)) MessageBox.Show(errorMessage);
+                if (!string.IsNullOrEmpty(errorMessage)) this.SafeMessage(errorMessage);
                 return;
             }
             this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
@@ -140,7 +174,7 @@ namespace BannerLordLauncher.ViewModels
             if (!this.Manager.MoveToBottom(idx, out var errorMessage))
             {
                 this._window.ModList.SelectedIndex = idx;
-                if (!string.IsNullOrEmpty(errorMessage)) MessageBox.Show(errorMessage);
+                if (!string.IsNullOrEmpty(errorMessage)) this.SafeMessage(errorMessage);
                 return;
             }
             this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
@@ -211,8 +245,12 @@ namespace BannerLordLauncher.ViewModels
                 this._window.Configuration.GamePath = game;
             }
 
-            if (this.Manager.Initialize(config, game, out var error)) return;
-            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
+            if (!this.Manager.Initialize(config, game, out var error))
+            {
+                if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
+            }
+
+            this.CheckForUpdates();
         }
 
         private string FindGameFolder()
@@ -250,7 +288,7 @@ namespace BannerLordLauncher.ViewModels
         private void RunCmd()
         {
             if (this.Manager.Run(out var error)) return;
-            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
+            if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
             Application.Current.Shutdown();
         }
 
@@ -258,7 +296,7 @@ namespace BannerLordLauncher.ViewModels
         {
 
             if (this.Manager.Save(out var error)) return;
-            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
+            if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
         }
 
         public void DragOver(IDropInfo dropInfo)
@@ -333,7 +371,7 @@ namespace BannerLordLauncher.ViewModels
             {
                 if (!UacUtil.IsElevated)
                 {
-                    MessageBox.Show("The application must be run as admin, to allow launching the game");
+                    this.SafeMessage("The application must be run as admin, to allow launching the game");
                     return false;
                 }
             }
