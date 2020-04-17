@@ -17,5 +17,7 @@ namespace BannerLord.Common
         bool CanCheckAll();
         bool CanUncheckAll();
         bool CanInvertCheck();
+
+        bool CanSort();
     }
 }

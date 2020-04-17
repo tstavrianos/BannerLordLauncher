@@ -120,6 +120,9 @@
             <Button Style="{StaticResource MoveBtn}" Name="MoveToBottom" Command="{Binding MoveToBottom}" ClickMode="Release" ToolTip="Move selection to bottom"  Margin="5,1,2,2">
                 <iconPacks:PackIconMaterial Kind="ChevronDoubleDown" Width="32" Height="32"/>
             </Button>
+            <Button Style="{StaticResource MoveBtn}" Name="Sort" Command="{Binding Sort}" ClickMode="Release" ToolTip="Sort"  Margin="5,10,2,2">
+                <iconPacks:PackIconMaterial Kind="Sort" Width="32" Height="32" />
+            </Button>
         </StackPanel>
         <Grid DockPanel.Dock="Top">
             <Grid.ColumnDefinitions>

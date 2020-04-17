@@ -18,5 +18,7 @@ namespace BannerLord.Common
         bool CheckAll(out string errorMessage);
         bool UncheckAll(out string errorMessage);
         bool InvertCheck(out string errorMessage);
+
+        bool Sort(out string errorMessage);
     }
 }

@@ -6,10 +6,10 @@ using System.Linq;
 using BannerLord.Common.Xml;
 using Splat;
 using System.Collections.Generic;
+using Trinet.Core.IO.Ntfs;
 
 namespace BannerLord.Common
 {
-    using Trinet.Core.IO.Ntfs;
 
     public sealed class ModManager : IModManager
     {
@@ -402,7 +402,7 @@ namespace BannerLord.Common
             }
         }
 
-        public void AlphaSort()
+        /*public void AlphaSort()
         {
             this._runValidation = false;
             var items = this.Mods.OrderBy(x => x.DisplayName).ToArray();
@@ -422,23 +422,47 @@ namespace BannerLord.Common
                 this.Mods.Move(this.Mods.Count - 1, i);
             this._runValidation = true;
             this.Validate();
+        }*/
+
+        private static IEnumerable<ModEntry> Dependencies(IEnumerable<ModEntry> source, ModEntry entry)
+        {
+            return entry.Module.DependedModules
+                .Select(
+                    dependency => source.FirstOrDefault(
+                        x => x.Module.Id.Equals(dependency, StringComparison.OrdinalIgnoreCase)))
+                .Where(found => found != null);
         }
 
-        public void TopologicalSort()
+        public bool Sort(out string errorMessage)
         {
+            errorMessage = default;
+            if (!this._client.CanSort()) return false;
             this._runValidation = false;
+
             try
             {
-                var sorted1 = this.Mods.TopologicalSort(x => x.Module.DependedModules?.Select(d => this.Mods.FirstOrDefault(y => string.Equals(y.Module.Id, d, StringComparison.OrdinalIgnoreCase))).Where(m => m != null) ?? Enumerable.Empty<ModEntry>()).ToArray();
+                var mods = this.Mods.ToArray();
                 this.Mods.Clear();
-                foreach (var entry in sorted1) this.Mods.Add(entry);
+                var sorted = mods
+                    .Select(
+                        x => (x, x.Module.Official ? 0 : 1,
+                                 x.Module.Id.Equals("native", StringComparison.OrdinalIgnoreCase) ? 0 : 1,
+                                 x.Module.Id.Equals("communitypatch", StringComparison.OrdinalIgnoreCase) ? 0 : 1))
+                    .OrderBy(x => x.Item4).ThenBy(x => x.Item3).ThenBy(x => x.Item2).ThenBy(x => x.x.Module.Name).Select(x => x.x).ToArray();
+
+                var sorted2 = sorted.TopologicalSort(x => Dependencies(sorted, x), true);
+                foreach (var mod in sorted2) this.Mods.Add(mod);
             }
             catch (Exception e)
             {
                 this.Log().Error(e, "TopologicalSort");
+                errorMessage = e.Message;
+                this._runValidation = true;
+                return false;
             }
             this._runValidation = true;
             this.Validate();
+            return false;
         }
     }
 }

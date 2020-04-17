@@ -15,12 +15,10 @@ using System.Linq;
 using Splat;
 using Octokit;
 using Application = System.Windows.Application;
+using System.Windows.Threading;
 
 namespace BannerLordLauncher.ViewModels
 {
-    using System.Threading.Tasks;
-    using System.Windows.Threading;
-
     public sealed class MainWindowViewModel : ViewModelBase, IDropTarget, IModManagerClient
     {
         public ModManager Manager { get; }
@@ -40,9 +38,9 @@ namespace BannerLordLauncher.ViewModels
         public ICommand Config { get; }
         public ICommand Run { get; }
         public ICommand Save { get; }
-        public ICommand AlphaSort { get; }
-        public ICommand ReverseOrder { get; }
-        public ICommand ExperimentalSort { get; }
+        //public ICommand AlphaSort { get; }
+        //public ICommand ReverseOrder { get; }
+        public ICommand Sort { get; }
         public ICommand MoveToTop { get; }
         public ICommand MoveUp { get; }
         public ICommand MoveDown { get; }
@@ -67,9 +65,9 @@ namespace BannerLordLauncher.ViewModels
             var moveDown = this.WhenAnyValue(x => x.SelectedIndex).Select(x => x >= 0 && x < this.Manager.Mods.Count - 1);
 
             this.Save = ReactiveCommand.Create(this.SaveCmd);
-            this.AlphaSort = ReactiveCommand.Create(() => this.Manager.AlphaSort());
-            this.ReverseOrder = ReactiveCommand.Create(() => this.Manager.ReverseOrder());
-            this.ExperimentalSort = ReactiveCommand.Create(() => this.Manager.TopologicalSort());
+            //this.AlphaSort = ReactiveCommand.Create(() => this.Manager.AlphaSort());
+            //this.ReverseOrder = ReactiveCommand.Create(() => this.Manager.ReverseOrder());
+            this.Sort = ReactiveCommand.Create(this.SortCmd);
             this.MoveToTop = ReactiveCommand.Create(this.MoveToTopCmd, moveUp.Select(x => x));
             this.MoveUp = ReactiveCommand.Create(this.MoveUpCmd, moveUp.Select(x => x));
             this.MoveDown = ReactiveCommand.Create(this.MoveDownCmd, moveDown.Select(x => x));
@@ -122,6 +120,22 @@ namespace BannerLordLauncher.ViewModels
         {
             if (this.Manager.InvertCheck(out var error)) return;
             if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
+        }
+
+        private void SortCmd()
+        {
+            var idx = this._window.ModList.SelectedIndex;
+            ModEntry it = null;
+            if (idx != -1)
+                it = this.Manager.Mods[idx];
+            this._window.ModList.SelectedIndex = -1;
+            if (!this.Manager.Sort(out var errorMessage))
+            {
+                this._window.ModList.SelectedIndex = idx;
+                if (!string.IsNullOrEmpty(errorMessage)) this.SafeMessage(errorMessage);
+                return;
+            }
+            if (idx != -1) this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
         }
 
         private void MoveToTopCmd()
@@ -434,6 +448,11 @@ namespace BannerLordLauncher.ViewModels
         }
 
         public bool CanInvertCheck()
+        {
+            return this.Manager.Mods.Count > 0;
+        }
+
+        public bool CanSort()
         {
             return this.Manager.Mods.Count > 0;
         }
