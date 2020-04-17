@@ -287,8 +287,12 @@ namespace BannerLordLauncher.ViewModels
 
         private void RunCmd()
         {
-            if (this.Manager.Run(out var error)) return;
-            if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
+            if (!this.Manager.Run(out var error))
+            {
+                if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
+                return;
+            }
+
             Application.Current.Shutdown();
         }
 
