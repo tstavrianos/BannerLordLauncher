@@ -6,6 +6,7 @@ namespace BannerLord.Common
     {
         bool Initialize(string configPath, string gamePath, out string errorMessage);
 
+        bool OpenConfig(out string errorMessage);
 
         bool Save(out string errorMessage);
         bool Run(out string errorMessage);

@@ -220,17 +220,33 @@ namespace BannerLord.Common
             return true;
         }
 
-        public void OpenConfig()
+        public bool OpenConfig(out string errorMessage)
         {
-            if (string.IsNullOrEmpty(this._basePath) || !Directory.Exists(this._basePath)) return;
-            var info = new ProcessStartInfo
+            errorMessage = default;
+            try
             {
-                Arguments = this._basePath,
-                FileName = "explorer.exe",
-                WorkingDirectory = this._basePath,
-                UseShellExecute = false
-            };
-            Process.Start(info);
+                if (string.IsNullOrEmpty(this._basePath) || !Directory.Exists(this._basePath))
+                {
+                    errorMessage = $"{this._basePath} is invalid";
+                    return false;
+                }
+                var info = new ProcessStartInfo
+                {
+                    Arguments = this._basePath,
+                    FileName = "explorer.exe",
+                    WorkingDirectory = this._basePath,
+                    UseShellExecute = false
+                };
+                Process.Start(info);
+            }
+            catch (Exception e)
+            {
+                this.Log().Error(e);
+                errorMessage = e.Message;
+                return false;
+            }
+
+            return true;
         }
 
         public bool Save(out string errorMessage)

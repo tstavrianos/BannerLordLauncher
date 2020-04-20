@@ -72,7 +72,7 @@ namespace BannerLordLauncher.ViewModels
             this.UncheckAll = ReactiveCommand.Create(this.UncheckAllCmd);
             this.InvertCheck = ReactiveCommand.Create(this.InvertCheckCmd);
             this.Run = ReactiveCommand.Create(this.RunCmd);
-            this.Config = ReactiveCommand.Create(() => this.Manager.OpenConfig());
+            this.Config = ReactiveCommand.Create(this.OpenConfigCmd);
         }
 
         private void SafeMessage(string message)
@@ -321,6 +321,13 @@ namespace BannerLordLauncher.ViewModels
             if (this.Manager.Save(out var error)) return;
             if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
         }
+        
+        private void OpenConfigCmd()
+        {
+
+            if (this.Manager.OpenConfig(out var error)) return;
+            if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
+        }
 
         public void DragOver(IDropInfo dropInfo)
         {
@@ -390,13 +397,21 @@ namespace BannerLordLauncher.ViewModels
                 return false;
             }
 
-            if (UACChecker.RequiresElevation(this.Manager.GameExe))
+            try
             {
-                if (!UacUtil.IsElevated)
+                if (UACChecker.RequiresElevation(this.Manager.GameExe))
                 {
-                    this.SafeMessage("The application must be run as admin, to allow launching the game");
-                    return false;
+                    if (!UacUtil.IsElevated)
+                    {
+                        this.SafeMessage("The application must be run as admin, to allow launching the game");
+                        return false;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                this.Log().Error(e);
+                SafeMessage(e.Message);
             }
 
             return true;
@@ -405,19 +420,17 @@ namespace BannerLordLauncher.ViewModels
         public bool CanSave()
         {
             this._ignoredWarning = false;
-            if (this.Manager.Mods.Any(x => x.HasConflicts))
+            if (!this.Manager.Mods.Any(x => x.HasConflicts)) return true;
+            if (MessageBox.Show(
+                    this._window,
+                    "Your mod list has existing conflicts, are you sure that you want to save it?",
+                    "Warning",
+                    MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
             {
-                if (MessageBox.Show(
-                        this._window,
-                        "Your mod list has existing conflicts, are you sure that you want to save it?",
-                        "Warning",
-                        MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
-                {
-                    return false;
-                }
-
-                this._ignoredWarning = true;
+                return false;
             }
+
+            this._ignoredWarning = true;
 
             return true;
         }

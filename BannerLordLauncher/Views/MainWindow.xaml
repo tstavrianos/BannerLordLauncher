@@ -14,7 +14,7 @@
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="32" ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}" />
     </WindowChrome.WindowChrome>
-    
+
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -106,7 +106,7 @@
                                      RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
                     StrokeThickness="1" />
             </Button>
-        </Grid>        
+        </Grid>
         <StackPanel DockPanel.Dock="Left" Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Center" RenderTransformOrigin="0.534,0.517">
             <Button Style="{StaticResource MoveBtn}" Name="MoveToTop" Command="{Binding MoveToTop}" ClickMode="Release" ToolTip="Move selection to top" Margin="5,2,2,1">
                 <iconPacks:PackIconMaterial Kind="ChevronDoubleUp" Width="32" Height="32"/>
@@ -167,12 +167,11 @@
             ScrollViewer.VerticalScrollBarVisibility="Visible" 
             dd:DragDrop.IsDragSource="True" 
             dd:DragDrop.IsDropTarget="True" 
-            Background="#FF191311" 
             BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" 
             dd:DragDrop.DropHandler="{Binding}" 
             HorizontalContentAlignment="Stretch" 
             ItemTemplate="{StaticResource ModListEntry}"
-            SelectionMode="Single">
+            SelectionMode="Single" Background="{x:Null}">
             <ListBox.Resources>
                 <Style TargetType="{x:Type ScrollBar}">
                     <Setter Property="SnapsToDevicePixels" Value="True" />

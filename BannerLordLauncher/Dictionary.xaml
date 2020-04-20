@@ -16,11 +16,16 @@
         <GradientStop Color="#462e22" Offset="1"/>
     </LinearGradientBrush>
     <SolidColorBrush x:Key="PackIconMaterialBorderBrush1" Color="#513a29"/>
-    <SolidColorBrush x:Key="StackPanelBackground1" Color="#FF17110B"/>
-    <SolidColorBrush x:Key="ModListItemCommunity" Color="#ffbe9d81"/>
-    <SolidColorBrush x:Key="ModListItemNative" Color="#ff684d36"/>
+    <SolidColorBrush x:Key="PackIconMaterialBorderBrush2" Color="#a96f46"/>
+    <SolidColorBrush x:Key="StackPanelBackground1" Color="#17110B"/>
+    <SolidColorBrush x:Key="ModListItemCommunity" Color="#be9d81"/>
+    <SolidColorBrush x:Key="ModListItemNative" Color="#684d36"/>
+    <SolidColorBrush x:Key="ModListCheckEmpty" Color="#231A11" />
+    <SolidColorBrush x:Key="TitleButtonInactive" Color="#3e2c20" />
+    <SolidColorBrush x:Key="TitleButtonActive" Color="#4e3827" />
+    <SolidColorBrush x:Key="TitleButtonPressed" Color="#4e3827" />
     <Style x:Key="MyButton" TargetType="{x:Type Button}">
-        <Setter Property="Foreground" Value="#c48129" />
+        <Setter Property="Foreground" Value="{StaticResource PackIconMaterialForeground1}" />
         <Setter Property="FontFamily" Value="/Assets/Fonts/#Candara" />
         <Setter Property="FontSize" Value="20" />
         <Setter Property="Background" Value="{StaticResource PackIconMaterialBackground1}"/>
@@ -40,12 +45,12 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource PackIconMaterialBackground2}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource PackIconMaterialBorderBrush2}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
     <Style x:Key="MoveBtn" TargetType="{x:Type Button}">
-        <Setter Property="Foreground" Value="#c48129" />
+        <Setter Property="Foreground" Value="{StaticResource PackIconMaterialForeground1}" />
         <Setter Property="Background" Value="{StaticResource PackIconMaterialBackground1}"/>
         <Setter Property="Padding" Value="0,0,0,0"/>
         <Setter Property="BorderThickness" Value="2,2,2,2"/>
@@ -63,7 +68,7 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource PackIconMaterialBackground2}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource PackIconMaterialBorderBrush2}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -82,10 +87,10 @@
                     </BulletDecorator>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="true">
-                            <Setter Property="Opacity" TargetName="CheckedMark" Value="1"/>
+                            <Setter Property="Foreground" TargetName="CheckedMark" Value="{StaticResource ModListItemCommunity}"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="false">
-                            <Setter Property="Opacity" TargetName="CheckedMark" Value="0"/>
+                            <Setter Property="Foreground" TargetName="CheckedMark" Value="{StaticResource ModListCheckEmpty}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -103,7 +108,7 @@
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border
                         x:Name="border"
-                        Background="#3e2c20"
+                        Background="{StaticResource TitleButtonInactive}"
                         BorderThickness="0"
                         SnapsToDevicePixels="true">
                         <ContentPresenter
@@ -116,10 +121,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter TargetName="border" Property="Background" Value="#4e3827" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource TitleButtonActive}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
-                            <Setter TargetName="border" Property="Background" Value="#4e3827" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource TitleButtonPressed}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -137,7 +142,7 @@
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border
                         x:Name="border"
-                        Background="#3e2c20"
+                        Background="{StaticResource TitleButtonInactive}"
                         BorderThickness="0"
                         SnapsToDevicePixels="true">
                         <ContentPresenter
@@ -150,10 +155,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter TargetName="border" Property="Background" Value="#4e3827" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource TitleButtonActive}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
-                            <Setter TargetName="border" Property="Background" Value="#4e3827" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource TitleButtonPressed}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
