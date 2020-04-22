@@ -42,13 +42,14 @@
                 Grid.Column="1"
                 Margin="4 0 0 0"
                 VerticalAlignment="Center"
-                FontSize="14"
-                Text="{Binding WindowTitle}">
+                FontSize="12"
+                Text="{Binding WindowTitle}"
+                Foreground="{StaticResource PackIconMaterialForeground1}">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
-                                <Setter Property="Foreground" Value="{DynamicResource WindowTitleBarInactiveText}" />
+                                <Setter Property="Foreground" Value="{DynamicResource PackIconMaterialForeground1}" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -159,7 +160,7 @@
             <Button  Grid.Row="0" Grid.Column="4" Style="{StaticResource MyButton}" Name="Config" Command="{Binding Config}" ClickMode="Release" ToolTip="Open config folder" Width="160" Margin="0,0,10,2">CONFIG DIR.</Button>
             <Button  Grid.Row="1" Grid.Column="4" Style="{StaticResource MyButton}" Name="Save" Command="{Binding Save}" ClickMode="Release" ToolTip="Save the mod order" Width="160" Margin="0,2,10,4">SAVE</Button>
         </Grid>
-        <ListBox 
+        <ListBox ItemContainerStyle="{DynamicResource ModListContainerEntry}" 
             ItemsSource="{Binding Manager.Mods}" 
             SelectedIndex="{Binding SelectedIndex}" 
             Name="ModList" 
@@ -170,7 +171,7 @@
             BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" 
             dd:DragDrop.DropHandler="{Binding}" 
             HorizontalContentAlignment="Stretch" 
-            ItemTemplate="{StaticResource ModListEntry}"
+            ItemTemplate="{StaticResource ModListEntry }"
             SelectionMode="Single" Background="{x:Null}">
             <ListBox.Resources>
                 <Style TargetType="{x:Type ScrollBar}">

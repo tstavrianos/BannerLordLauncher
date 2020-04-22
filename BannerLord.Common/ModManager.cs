@@ -40,7 +40,17 @@ namespace BannerLord.Common
                 this.Log().Error(errorMessage);
                 return false;
             }
-            if (!Directory.Exists(Path.Combine(this._basePath, "BannerLordLauncher Backups"))) Directory.CreateDirectory(Path.Combine(this._basePath, "BannerLordLauncher Backups"));
+
+            try
+            {
+                if (!Directory.Exists(Path.Combine(this._basePath, "BannerLordLauncher Backups")))
+                    Directory.CreateDirectory(Path.Combine(this._basePath, "BannerLordLauncher Backups"));
+            }
+            catch (Exception e)
+            {
+                this.Log().Error(e);
+            }
+
             var launcherData = UserData.Load(this, Path.Combine(this._basePath, "LauncherData.xml")) ?? new UserData();
             this._modulePath = Path.Combine(game, "Modules");
             this.GameExe = Path.Combine(game, "bin", "Win64_Shipping_Client", "Bannerlord.exe");

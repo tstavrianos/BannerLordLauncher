@@ -8,6 +8,7 @@ using ReactiveUI;
 using Steam.Common;
 using Ookii.Dialogs.Wpf;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using GongSolutions.Wpf.DragDrop;
@@ -19,6 +20,8 @@ using System.Windows.Threading;
 
 namespace BannerLordLauncher.ViewModels
 {
+    using BannerLordLauncher.Controls.MessageBox;
+
     public sealed class MainWindowViewModel : ViewModelBase, IDropTarget, IModManagerClient
     {
         public ModManager Manager { get; }
@@ -48,6 +51,13 @@ namespace BannerLordLauncher.ViewModels
         public ICommand CheckAll { get; }
         public ICommand UncheckAll { get; }
         public ICommand InvertCheck { get; }
+
+        private string _windowTitle;
+        public string WindowTitle
+        {
+            get => this._windowTitle;
+            set => this.RaiseAndSetIfChanged(ref this._windowTitle, value);
+        }
         // ReSharper restore UnusedAutoPropertyAccessor.Global
         // ReSharper restore MemberCanBePrivate.Global
 
@@ -75,19 +85,22 @@ namespace BannerLordLauncher.ViewModels
             this.Config = ReactiveCommand.Create(this.OpenConfigCmd);
         }
 
-        private void SafeMessage(string message)
+        private static void RunInDispatcher(Action a)
         {
+            Debug.Assert(Application.Current.Dispatcher != null, "Application.Current.Dispatcher != null");
             if (Application.Current.Dispatcher.CheckAccess())
             {
-                MessageBox.Show(this._window, message);
+                a();
             }
             else
             {
-                Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
-                    {
-                        MessageBox.Show(this._window, message);
-                    }));
+                Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, a);
             }
+        }
+
+        private void SafeMessage(string message)
+        {
+            RunInDispatcher(() => MyMessageBox.Show(this._window, message));
         }
 
         private async void CheckForUpdates()
@@ -100,6 +113,7 @@ namespace BannerLordLauncher.ViewModels
                                  .ConfigureAwait(false);
                 var latestRelease = result.OrderByDescending(x => x.CreatedAt).FirstOrDefault();
                 if (latestRelease == null) return;
+                this.WindowTitle = currentVersion.ToString();
                 var latestReleaseVersion = new Version(latestRelease.TagName);
                 if (latestReleaseVersion <= currentVersion) return;
                 var message = $"Version {latestReleaseVersion} is available to download";
@@ -318,10 +332,13 @@ namespace BannerLordLauncher.ViewModels
         private void SaveCmd()
         {
 
-            if (this.Manager.Save(out var error)) return;
-            if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
+            if (!this.Manager.Save(out var error))
+            {
+                if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
+            }
+            this.SafeMessage("Saved successfully");
         }
-        
+
         private void OpenConfigCmd()
         {
 
@@ -382,11 +399,13 @@ namespace BannerLordLauncher.ViewModels
         {
             if (this._ignoredWarning && this.Manager.Mods.Any(x => x.HasConflicts))
             {
-                if (MessageBox.Show(
+                if (MyMessageBox.Show(
                         this._window,
                         "Your mod list has existing conflicts, are you sure that you want to run the game?",
                         "Warning",
-                        MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+                        MessageBoxButton.YesNo
+                        //, MessageBoxImage.Warning
+                        ) == MessageBoxResult.No)
                 {
                     return false;
                 }
@@ -421,11 +440,13 @@ namespace BannerLordLauncher.ViewModels
         {
             this._ignoredWarning = false;
             if (!this.Manager.Mods.Any(x => x.HasConflicts)) return true;
-            if (MessageBox.Show(
+            if (MyMessageBox.Show(
                     this._window,
                     "Your mod list has existing conflicts, are you sure that you want to save it?",
                     "Warning",
-                    MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+                    MessageBoxButton.YesNo
+                    //, MessageBoxImage.Warning
+                    ) == MessageBoxResult.No)
             {
                 return false;
             }
