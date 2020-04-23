@@ -14,16 +14,16 @@ namespace BannerLord.Common.Extensions
 
             return dictionary[key];
         }
-        
+
         public static void PutAll<TK, TV>(this IDictionary<TK, TV> dictionary,
             IEnumerable<KeyValuePair<TK, TV>> toPut)
         {
-            foreach (var (key, value) in toPut)
+            foreach (var kv in toPut)
             {
-                dictionary[key] = value;
+                dictionary[kv.Key] = kv.Value;
             }
         }
-        
+
         internal static TValue GetOrCreate<TKey, TValue>(this Dictionary<TKey, TValue> map, TKey key, Func<TKey, TValue> ctor)
         {
             if (!map.ContainsKey(key))

@@ -7,6 +7,8 @@ using Splat;
 
 namespace Steam.Common
 {
+    using Microsoft.Win32;
+
     /// <summary>
     /// Steam installation path and Steam games folder finder.
     /// </summary>
@@ -163,7 +165,7 @@ namespace Steam.Common
                  : @"SOFTWARE\Valve\Steam";
             try
             {
-                var subRegKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(regPath);
+                var subRegKey = Registry.LocalMachine.OpenSubKey(regPath);
                 var path = subRegKey?.GetValue("InstallPath").ToString()
                     .Replace('/', '\\'); // not actually required, just for consistency's sake
 

@@ -20,7 +20,7 @@ namespace BannerLord.Common
 
         public override int GetHashCode()
         {
-            return this._module.Id.GetHashCode(StringComparison.OrdinalIgnoreCase);
+            return this._module.Id.ToLowerInvariant().GetHashCode();
         }
 
         private Module _module;
