@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
+using Alphaleonis.Win32.Filesystem;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -11,7 +11,7 @@ using Steam.Common.WebAPI.Responses.ISteamRemoteStorage;
 
 namespace Steam.Common.WebAPI.Requests
 {
-    public sealed class SteamRemoteStorage: ISteamRemoteStorage, IEnableLogger
+    public sealed class SteamRemoteStorage : ISteamRemoteStorage, IEnableLogger
     {
         private readonly HttpClient _httpClient;
         private readonly bool _cached;
@@ -28,26 +28,32 @@ namespace Steam.Common.WebAPI.Requests
         private void CheckCache<T>(ref List<CachedResponse<T>> property, FileSystemInfo file)
         {
             if (!(property is null)) return;
-            if (file.Exists) {
-                try {
+            if (file.Exists)
+            {
+                try
+                {
                     property = JsonConvert.DeserializeObject<List<CachedResponse<T>>>(File.ReadAllText(file.FullName));
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     this.Log().Error(ex, "[Steam] Unable to load cache");
                     property = new List<CachedResponse<T>>();
                 }
-            } else {
+            }
+            else
+            {
                 property = new List<CachedResponse<T>>();
             }
         }
 
         public Task<GetPublishedFileDetailsResponse> GetPublishedFileDetailsAsync(string fileId)
         {
-            return this.GetPublishedFileDetailsAsync(new[] {fileId});
+            return this.GetPublishedFileDetailsAsync(new[] { fileId });
         }
 
         public Task<GetPublishedFileDetailsResponse> GetPublishedFileDetailsAsync(ulong fileId)
         {
-            return this.GetPublishedFileDetailsAsync(new[] {fileId});
+            return this.GetPublishedFileDetailsAsync(new[] { fileId });
         }
 
         public Task<GetPublishedFileDetailsResponse> GetPublishedFileDetailsAsync(IEnumerable<ulong> fileIds)
@@ -77,8 +83,9 @@ namespace Steam.Common.WebAPI.Requests
             }
 
             var values = new Dictionary<string, string> { { "itemcount", fileIds.Count.ToString() } };
-            for (var i = 0; i < fileIds.Count; i++) {
-                values.Add($"publishedfileids[{i}]", fileIds[i] );
+            for (var i = 0; i < fileIds.Count; i++)
+            {
+                values.Add($"publishedfileids[{i}]", fileIds[i]);
             }
             var content = new FormUrlEncodedContent(values);
             var url = new Uri("https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/");
@@ -104,7 +111,7 @@ namespace Steam.Common.WebAPI.Requests
             File.WriteAllText(this._publishedFileDetailsCacheFile.FullName,
                 JsonConvert.SerializeObject(this._publishedFileDetailsCached));
 
-            return parsedResponse;        
+            return parsedResponse;
         }
     }
 }

@@ -17,6 +17,10 @@ namespace BannerLord.Common
 
     using Trinet.Core.IO.Ntfs;
 
+    using Directory = Alphaleonis.Win32.Filesystem.Directory;
+    using File = Alphaleonis.Win32.Filesystem.File;
+    using Path = Alphaleonis.Win32.Filesystem.Path;
+
     public sealed class ModManager : IModManager
     {
         private readonly IModManagerClient _client;
@@ -129,9 +133,10 @@ namespace BannerLord.Common
             }
 
             foreach (var dll in this.GetAssemblies().Distinct())
+            {
                 try
                 {
-                    var fi = new FileInfo(dll);
+                    var fi = new System.IO.FileInfo(dll);
                     if (!fi.Exists) continue;
                     try
                     {
@@ -148,6 +153,7 @@ namespace BannerLord.Common
                 {
                     //
                 }
+            }
 
             extraGameArguments ??= "";
             var args = extraGameArguments.Trim() + " " + this.GameArguments().Trim();
@@ -372,20 +378,30 @@ namespace BannerLord.Common
 
         private void BackupFile(string file)
         {
+            var path = Path.Combine(this._basePath, "BannerLordLauncher Backups");
+            try
+            {
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+            }
+            catch (Exception e)
+            {
+                this.Log().Error(e);
+                return;
+            }
+
             if (!File.Exists(file)) return;
-            if (!Directory.Exists(Path.Combine(this._basePath, "BannerLordLauncher Backups")))
-                Directory.CreateDirectory(Path.Combine(this._basePath, "BannerLordLauncher Backups"));
             var ext = Path.GetExtension(file);
             var i = 0;
             var newFile = Path.ChangeExtension(file, $"{ext}.{i:D3}");
             Debug.Assert(newFile != null, nameof(newFile) + " != null");
-            newFile = Path.Combine(this._basePath, "BannerLordLauncher Backups", Path.GetFileName(newFile));
+            newFile = Path.Combine(path, Path.GetFileName(newFile));
             while (File.Exists(newFile))
             {
                 i++;
                 newFile = Path.ChangeExtension(file, $"{ext}.{i:D3}");
                 Debug.Assert(newFile != null, nameof(newFile) + " != null");
-                newFile = Path.Combine(this._basePath, "BannerLordLauncher Backups", Path.GetFileName(newFile));
+                newFile = Path.Combine(path, Path.GetFileName(newFile));
             }
 
             if (i <= 999)
