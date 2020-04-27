@@ -30,10 +30,18 @@ namespace BannerLordLauncher.Views
                 this.Configuration = null;
             }
 
-            if (this.Configuration == null)
+            if (this.Configuration?.Version == null)
             {
-                this.Configuration = new AppConfig();
-                this.Configuration.Placement = new WindowPlacement.Data { normalPosition = new WindowPlacement.Rect(0, 0, 604, 730) };
+                var o = new OptionsDialog();
+                o.ShowDialog();
+                if (o.Result)
+                {
+                    this.Configuration = o.Config;
+                }
+                else
+                {
+                    Environment.Exit(0);
+                }
             }
 
             this.InitializeComponent();
@@ -69,6 +77,21 @@ namespace BannerLordLauncher.Views
             {
                 Log.Error(ex, "Error writing the configuration to disk");
             }
+        }
+
+        private void ButtonBase_OnClickCog(object sender, RoutedEventArgs e)
+        {
+            var w = new OptionsDialog();
+            w.ShowDialog();
+            if (!w.Result) return;
+            this.Configuration.GamePath = w.Config.GamePath;
+            this.Configuration.ConfigPath = w.Config.ConfigPath;
+            this.Configuration.CheckForUpdates = w.Config.CheckForUpdates;
+            this.Configuration.CloseWhenRunningGame = w.Config.CloseWhenRunningGame;
+            this.Configuration.SubmitCrashLogs = w.Config.SubmitCrashLogs;
+            this.Configuration.WarnOnConflict = w.Config.WarnOnConflict;
+            this.Configuration.ExtraGameArguments = w.Config.ExtraGameArguments;
+            this.Configuration.GameExeId = w.Config.GameExeId;
         }
 
         private void RefreshMaximizeRestoreButton()

@@ -5,6 +5,8 @@ using ReactiveUI;
 
 namespace BannerLord.Common
 {
+    using System.Collections.Generic;
+    using System.Linq;
 
     public sealed class ModEntry : ReactiveObject, IEquatable<ModEntry>
     {
@@ -29,6 +31,9 @@ namespace BannerLord.Common
         private int _originalSpot;
         private bool _isPointerOver;
         private ObservableCollection<LoadOrderConflict> _loadOrderConflicts;
+        public HashSet<string> MyAssemblies { get; } = new HashSet<string>();
+        public HashSet<string> DependOnAssemblies { get; } = new HashSet<string>();
+        public HashSet<ModEntry> DependsOn { get; } = new HashSet<ModEntry>();
 
         public bool IsCheckboxEnabled => this._module.Official == false && this._module.SingleplayerModule == true;
 
@@ -54,7 +59,7 @@ namespace BannerLord.Common
             set => this.RaiseAndSetIfChanged(ref this._loadOrderConflicts, value);
         }
 
-        public bool HasConflicts => this._loadOrderConflicts.Count > 0;
+        public bool HasConflicts => this._loadOrderConflicts.Any(x => !x.Optional);
 
         public string Conflicts
         {
@@ -64,6 +69,7 @@ namespace BannerLord.Common
                 foreach (var conflict in this._loadOrderConflicts)
                 {
                     if (!string.IsNullOrEmpty(ret)) ret += Environment.NewLine;
+                    ret += conflict.Optional ? "(Optional)" : "";
                     if (conflict.IsUp) ret += $"{conflict.DependsOn} depends on this";
                     else if (conflict.IsDown) ret += $"This depends on {conflict.DependsOn}";
                     else ret += $"{conflict.DependsOn} is missing";

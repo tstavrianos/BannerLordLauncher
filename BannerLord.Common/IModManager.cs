@@ -9,7 +9,7 @@ namespace BannerLord.Common
         bool OpenConfig(out string errorMessage);
 
         bool Save(out string errorMessage);
-        bool Run(out string errorMessage);
+        bool Run(string gameExe, string extraGameArguments, out string errorMessage);
 
         bool MoveToTop(int idx, out string errorMessage);
         bool MoveUp(int idx, out string errorMessage);

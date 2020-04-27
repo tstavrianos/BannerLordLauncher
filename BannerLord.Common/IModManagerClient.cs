@@ -6,7 +6,7 @@ namespace BannerLord.Common
     {
         bool CanInitialize(string configPath, string gamePath);
 
-        bool CanRun();
+        bool CanRun(string gameExe, string extraGameArguments);
         bool CanSave();
 
         bool CanMoveToTop(int idx);

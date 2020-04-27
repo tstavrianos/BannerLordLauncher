@@ -4,6 +4,9 @@ namespace BannerLordLauncher
 {
     public class AppConfig
     {
+        [JsonProperty("version")]
+        public int? Version { get; set; }
+
         [JsonProperty("gamePath")]
         public string GamePath { get; set; }
 
@@ -12,5 +15,23 @@ namespace BannerLordLauncher
 
         [JsonProperty("configPath")]
         public string ConfigPath { get; set; }
+
+        [JsonProperty("checkForUpdates")]
+        public bool CheckForUpdates { get; set; }
+
+        [JsonProperty("submitCrashLogs")]
+        public bool SubmitCrashLogs { get; set; }
+
+        [JsonProperty("closeWhenRunningGame")]
+        public bool CloseWhenRunningGame { get; set; }
+
+        [JsonProperty("warnOnConflict")]
+        public bool WarnOnConflict { get; set; }
+
+        [JsonProperty("extraGameArguments")]
+        public string ExtraGameArguments { get; set; }
+
+        [JsonProperty("gameExeId")]
+        public int GameExeId { get; set; }
     }
 }

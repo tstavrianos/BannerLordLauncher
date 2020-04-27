@@ -51,6 +51,7 @@ namespace BannerLordLauncher.ViewModels
         public ICommand CheckAll { get; }
         public ICommand UncheckAll { get; }
         public ICommand InvertCheck { get; }
+        public ICommand Copy { get; }
 
         private string _windowTitle;
         public string WindowTitle
@@ -83,6 +84,7 @@ namespace BannerLordLauncher.ViewModels
             this.InvertCheck = ReactiveCommand.Create(this.InvertCheckCmd);
             this.Run = ReactiveCommand.Create(this.RunCmd);
             this.Config = ReactiveCommand.Create(this.OpenConfigCmd);
+            this.Copy = ReactiveCommand.Create(() => Clipboard.SetText(string.Join(Environment.NewLine, this.Manager.Mods.Where(x => x.UserModData.IsSelected).Select(x => x.Module.Id))));
         }
 
         private static void RunInDispatcher(Action a)
@@ -215,118 +217,23 @@ namespace BannerLordLauncher.ViewModels
 
         public void Initialize()
         {
-            var config = string.Empty;
-            if (!string.IsNullOrEmpty(this._window.Configuration.ConfigPath) && Directory.Exists(this._window.Configuration.ConfigPath))
-            {
-                config = this._window.Configuration.ConfigPath;
-            }
-            else
-            {
-                try
-                {
-                    var basePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    if (Directory.Exists(basePath))
-                    {
-                        basePath = Path.Combine(basePath, "Mount and Blade II Bannerlord");
-                        if (Directory.Exists(basePath))
-                        {
-                            basePath = Path.Combine(basePath, "Configs");
-                            if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
-                            config = basePath;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    this.Log().Error(ex);
-                    config = null;
-                }
-            }
-
-            if (string.IsNullOrEmpty(config))
-            {
-                config = this.FindConfigFolder();
-            }
-
-            this._window.Configuration.ConfigPath = config;
-
-
-            var game = string.Empty;
-
-            if (!string.IsNullOrEmpty(this._window.Configuration.GamePath) &&
-                Directory.Exists(this._window.Configuration.GamePath) && File.Exists(Path.Combine(this._window.Configuration.GamePath, "bin", "Win64_Shipping_Client", "Bannerlord.exe")))
-            {
-                game = this._window.Configuration.GamePath;
-            }
-            else
-            {
-                var steamFinder = new SteamFinder();
-                if (steamFinder.FindSteam())
-                {
-                    game = steamFinder.FindGameFolder(261550);
-                    if (string.IsNullOrEmpty(game) || !Directory.Exists(game))
-                    {
-                        game = null;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(game))
-                {
-                    game = this.FindGameFolder();
-                }
-
-                this._window.Configuration.GamePath = game;
-            }
-
-            if (!this.Manager.Initialize(config, game, out var error))
+            if (!this.Manager.Initialize(this._window.Configuration.ConfigPath, this._window.Configuration.GamePath, out var error))
             {
                 if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
             }
 
-            this.CheckForUpdates();
-        }
-
-        private string FindGameFolder()
-        {
-            while (true)
-            {
-                var dialog = new VistaFolderBrowserDialog
-                {
-                    Description = "Select game root folder",
-                    UseDescriptionForTitle = true
-                };
-                var result = dialog.ShowDialog(this._window);
-                if (result is null) Environment.Exit(0);
-                if (!Directory.Exists(dialog.SelectedPath) || !File.Exists(Path.Combine(dialog.SelectedPath, "bin", "Win64_Shipping_Client", "Bannerlord.exe"))) continue;
-                return dialog.SelectedPath;
-            }
-        }
-
-        private string FindConfigFolder()
-        {
-            while (true)
-            {
-                var dialog = new VistaFolderBrowserDialog
-                {
-                    Description = "Select game config folder, in documents",
-                    UseDescriptionForTitle = true
-                };
-                var result = dialog.ShowDialog(this._window);
-                if (result is null) Environment.Exit(0);
-                if (!Directory.Exists(dialog.SelectedPath)) continue;
-                return dialog.SelectedPath;
-            }
+            if (this._window.Configuration.CheckForUpdates) this.CheckForUpdates();
         }
 
         private void RunCmd()
         {
-            if (!this.Manager.Run(out var error))
+            if (!this.Manager.Run(this._window.Configuration.GameExeId == 1 ? "Bannerlord_Native.exe" : "Bannerlord.exe", this._window.Configuration.ExtraGameArguments, out var error))
             {
                 if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
                 return;
             }
 
-            Application.Current.Shutdown();
+            if (this._window.Configuration.CloseWhenRunningGame) Application.Current.Shutdown();
         }
 
         private void SaveCmd()
@@ -395,9 +302,9 @@ namespace BannerLordLauncher.ViewModels
             return true;
         }
 
-        public bool CanRun()
+        public bool CanRun(string gameExe, string extraGameArguments)
         {
-            if (this._ignoredWarning && this.Manager.Mods.Any(x => x.HasConflicts))
+            if (this._ignoredWarning && this.Manager.Mods.Any(x => x.HasConflicts) && this._window.Configuration.WarnOnConflict)
             {
                 if (MyMessageBox.Show(
                         this._window,
@@ -410,15 +317,17 @@ namespace BannerLordLauncher.ViewModels
                     return false;
                 }
             }
-            if (!File.Exists(this.Manager.GameExe))
+
+            var acutalGameExe = Path.Combine(this.Manager.GameExeFolder, gameExe);
+            if (!File.Exists(acutalGameExe))
             {
-                this.Log().Error($"{this.Manager.GameExe} could not be found");
+                this.Log().Error($"{acutalGameExe} could not be found");
                 return false;
             }
 
             try
             {
-                if (UACChecker.RequiresElevation(this.Manager.GameExe))
+                if (UACChecker.RequiresElevation(acutalGameExe))
                 {
                     if (!UacUtil.IsElevated)
                     {
@@ -440,15 +349,18 @@ namespace BannerLordLauncher.ViewModels
         {
             this._ignoredWarning = false;
             if (!this.Manager.Mods.Any(x => x.HasConflicts)) return true;
-            if (MyMessageBox.Show(
-                    this._window,
-                    "Your mod list has existing conflicts, are you sure that you want to save it?",
-                    "Warning",
-                    MessageBoxButton.YesNo
+            if (this._window.Configuration.WarnOnConflict)
+            {
+                if (MyMessageBox.Show(
+                        this._window,
+                        "Your mod list has existing conflicts, are you sure that you want to save it?",
+                        "Warning",
+                        MessageBoxButton.YesNo
                     //, MessageBoxImage.Warning
                     ) == MessageBoxResult.No)
-            {
-                return false;
+                {
+                    return false;
+                }
             }
 
             this._ignoredWarning = true;

@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:BannerLordLauncher.Views"
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         mc:Ignorable="d"
-        Title="Configuration" Height="252" Width="769" ResizeMode="NoResize">
+        Title="Configuration" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen" WindowStyle="None" HorizontalAlignment="Center" VerticalAlignment="Center" Width="802" Height="373" BorderBrush="{DynamicResource PackIconMaterialBorderBrush2}" BorderThickness="2"
+        >
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -15,75 +17,74 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid>
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Background="{DynamicResource StackPanelBackground1}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="16"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Game configs folder (in Documents)" Foreground="{DynamicResource PackIconMaterialForeground1}" />
-                <TextBox Grid.Column="1" IsReadOnly="True" Margin="0,0,5,0" Foreground="{DynamicResource ModListItemNative}" Background="{DynamicResource StackPanelBackground1}" BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" SelectionBrush="{DynamicResource Item.MouseOver.Background}" Text="teest"/>
-                <iconPacks:PackIconMaterial Grid.Column="2" Kind="FolderOpen" Width="16" Height="16" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-            </Grid>
-            <TextBlock />
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="16"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Game root folder (containing bin and modules)" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-                <TextBox Grid.Column="1" IsReadOnly="True" Margin="0,0,5,0" Foreground="{DynamicResource ModListItemNative}" Background="{DynamicResource StackPanelBackground1}" BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" SelectionBrush="{DynamicResource Item.MouseOver.Background}"/>
-                <iconPacks:PackIconMaterial Grid.Column="2" Kind="FolderOpen" Width="16" Height="16" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-            </Grid>
-            <TextBlock />
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="16"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Check for updates at startup" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-                <iconPacks:PackIconMaterial Grid.Column="1" Kind="CheckBoxOutline" Width="16" Height="16" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-            </Grid>
-            <TextBlock />
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="16"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Automatically submit crash logs*" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-                <iconPacks:PackIconMaterial Grid.Column="1" Kind="CheckBoxOutline" Width="16" Height="16" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-            </Grid>
-            <TextBlock />
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="16"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Close launcher after launching the game" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-                <iconPacks:PackIconMaterial Grid.Column="1" Kind="CheckBoxOutline" Width="16" Height="16" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-            </Grid>
-            <TextBlock />
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="16"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Warn if trying to Run or Save with conflicts" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-                <iconPacks:PackIconMaterial Grid.Column="1" Kind="CheckBoxOutline" Width="16" Height="16" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-            </Grid>
-            <TextBlock/>
-            <TextBlock Text="* Need to restart the application for the change to take effect" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Ok" Background="{DynamicResource PackIconMaterialBackground1}" Foreground="{DynamicResource PackIconMaterialForeground1}" BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" />
-                <Button Content="Cancel" Background="{DynamicResource PackIconMaterialBackground1}" Foreground="{DynamicResource PackIconMaterialForeground1}" BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" />
-            </StackPanel>
+    <Window.Background>
+        <ImageBrush ImageSource="/BannerLordLauncher;component/Assets/background.png" TileMode="Tile" ViewportUnits="Absolute" Viewport="0,0,1024,1024"/>
+    </Window.Background>
+    <Grid HorizontalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="24"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Column="0" Grid.Row="0" Text="Game configs folder (in Documents)" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14" />
+        <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=Config.ConfigPath}" IsReadOnly="True" Margin="0,0,5,0" Foreground="{DynamicResource ModListItemNative}" Background="{DynamicResource StackPanelBackground1}" BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" SelectionBrush="{DynamicResource Item.MouseOver.Background}"/>
+        <Button Grid.Column="2" Grid.Row="0" Click="ButtonBase_OnClickConfig" Style="{StaticResource Button3}" Margin="0,0,5,0">
+            <iconPacks:PackIconMaterial Kind="FolderOpen" Width="12" Height="12"/>
+        </Button>
+
+        <TextBlock Grid.Column="0" Grid.Row="2" Text="Game root folder (containing bin and modules)" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14"/>
+        <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding Path=Config.GamePath}" IsReadOnly="True" Margin="0,0,5,0" Foreground="{DynamicResource ModListItemNative}" Background="{DynamicResource StackPanelBackground1}" BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" SelectionBrush="{DynamicResource Item.MouseOver.Background}"/>
+        <Button Grid.Column="2" Grid.Row="2" Click="ButtonBase_OnClickGame" Style="{StaticResource Button3}" Margin="0,0,5,0">
+            <iconPacks:PackIconMaterial Kind="FolderOpen" Width="12" Height="12" />
+        </Button>
+
+        <TextBlock Grid.Column="0" Grid.Row="4" Text="Extra arguments when running game (like /diag)" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14"/>
+        <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding Path=Config.ExtraGameArguments}" Margin="0,0,5,0" Foreground="{DynamicResource ModListItemNative}" Background="{DynamicResource StackPanelBackground1}" BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" SelectionBrush="{DynamicResource Item.MouseOver.Background}"/>
+
+        <TextBlock Grid.Column="0" Grid.Row="6" Text="Game exe to use" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14"/>
+        <ComboBox Grid.Column="1" Grid.Row="6" Style="{StaticResource SimpleComboBox}" SelectedIndex="{Binding Path=Config.GameExeId}" Margin="0,0,5,0" Foreground="{DynamicResource ModListItemNative}" Background="{DynamicResource StackPanelBackground1}" BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}">
+            <ComboBoxItem Style="{StaticResource SimpleComboBoxItem}">BannerLord.exe</ComboBoxItem>
+            <ComboBoxItem Style="{StaticResource SimpleComboBoxItem}" Background="{DynamicResource StackPanelBackground1}" BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}">BannerLord_Native.exe</ComboBoxItem>
+        </ComboBox>
+
+        <TextBlock Grid.Column="0" Grid.Row="8" Text="Check for updates at startup" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14"/>
+        <CheckBox Grid.Column="1" Grid.Row="8" IsChecked="{Binding Path=Config.CheckForUpdates}" Style="{StaticResource OptionsCheckBox}" Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+        <TextBlock Grid.Column="0" Grid.Row="10" Text="Automatically submit crash logs*" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14"/>
+        <CheckBox Grid.Column="1" Grid.Row="10" IsChecked="{Binding Path=Config.SubmitCrashLogs}" Style="{StaticResource OptionsCheckBox}" Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+        <TextBlock Grid.Column="0" Grid.Row="12" Text="Close launcher after launching the game" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14"/>
+        <CheckBox Grid.Column="1" Grid.Row="12" IsChecked="{Binding Path=Config.CloseWhenRunningGame}" Style="{StaticResource OptionsCheckBox}" Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        
+        <TextBlock Grid.Column="0" Grid.Row="14" Text="Warn if trying to Run or Save with conflicts" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14"/>
+        <CheckBox Grid.Column="1" Grid.Row="14" IsChecked="{Binding Path=Config.WarnOnConflict}" Style="{StaticResource OptionsCheckBox}" Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        
+        <TextBlock Grid.Column="0" Grid.Row="16" Text="* Need to restart the application for the change to take effect" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14"/>
+        <StackPanel Grid.Column="1" Grid.Row="17" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Ok" FontSize="22" Style="{StaticResource Button2}" Click="ButtonBase_OnClickOk">
+            </Button>
+            <Button Content="Cancel" FontSize="22" Style="{StaticResource Button2}" Click="ButtonBase_OnClickCancel" Margin="0,0,15,0">
+            </Button>
         </StackPanel>
     </Grid>
 </Window>

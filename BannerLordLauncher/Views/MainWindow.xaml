@@ -10,7 +10,7 @@
         xmlns:dd="urn:gong-wpf-dragdrop"
         xmlns:viewModels="clr-namespace:BannerLordLauncher.ViewModels"
         mc:Ignorable="d"
-        Title="BannerLord Mod Launcher" Height="730" Width="604" d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}" ResizeMode="CanResize" Icon="/Assets/BLLicon.ico" MinWidth="525" MinHeight="418" WindowStyle="SingleBorderWindow">
+        Title="BannerLord Mod Launcher" Height="730" Width="604" d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}" ResizeMode="CanResize" Icon="/ML.ico" MinWidth="842" MinHeight="501" WindowStyle="SingleBorderWindow">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="32" ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}" />
     </WindowChrome.WindowChrome>
@@ -23,28 +23,41 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <DockPanel Background="{DynamicResource StackPanelBackground1}">
+    <Window.Background>
+        <ImageBrush ImageSource="/BannerLordLauncher;component/Assets/background.png" TileMode="Tile" ViewportUnits="Absolute" Viewport="0,0,1024,1024"/>
+    </Window.Background>
+    <DockPanel>
         <Grid DockPanel.Dock="Top">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="36"/>
+                <ColumnDefinition Width="38"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="46"/>
+                <ColumnDefinition Width="46"/>
+                <ColumnDefinition Width="46"/>
+                <ColumnDefinition Width="46"/>
             </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="36"/>
+                <RowDefinition Height="10" />
+                <RowDefinition Height="23" />
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
             <Image
                 Grid.Column="0"
-                Width="22"
-                Height="22"
-                Margin="4"
-                Source="/Assets/BLLIcon.ico" />
+                Grid.Row="0"
+                Width="32"
+                Height="32"
+                Margin="4,4,4,0"
+                Source="/Assets/32_flat.png" />
             <TextBlock
                 Grid.Column="1"
-                Margin="4 0 0 0"
-                VerticalAlignment="Center"
-                FontSize="12"
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                VerticalAlignment="Top"
+                FontSize="10"
                 Text="{Binding WindowTitle}"
-                Foreground="{StaticResource PackIconMaterialForeground1}">
+                Foreground="{StaticResource PackIconMaterialForeground1}" HorizontalAlignment="Left">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
                         <Style.Triggers>
@@ -55,12 +68,19 @@
                     </Style>
                 </TextBlock.Style>
             </TextBlock>
-
             <Button
-                Grid.Column="2"
+                Grid.Column="3"
+                Grid.Row="0" Grid.RowSpan="2"
+                Click="ButtonBase_OnClickCog"
+                Style="{StaticResource TitleBarButtonStyle}" Width="46" Height="46" HorizontalAlignment="Center" VerticalAlignment="Top">
+                <iconPacks:PackIconMaterial Kind="Cogs" Grid.Column="2" Width="24" Height="24" />
+            </Button>
+            <Button
+                Grid.Column="4"
+                Grid.Row="0" Grid.RowSpan="2"
                 Click="OnMinimizeButtonClick"
                 RenderOptions.EdgeMode="Aliased"
-                Style="{StaticResource TitleBarButtonStyle}">
+                Style="{StaticResource TitleBarButtonStyle}" Width="46" Height="46" HorizontalAlignment="Center" VerticalAlignment="Top">
                 <Path
                     Width="46"
                     Height="32"
@@ -71,9 +91,10 @@
             </Button>
             <Button
                 Name="maximizeButton"
-                Grid.Column="3"
+                Grid.Row="0" Grid.RowSpan="2"
+                Grid.Column="5"
                 Click="OnMaximizeRestoreButtonClick"
-                Style="{StaticResource TitleBarButtonStyle}">
+                Style="{StaticResource TitleBarButtonStyle}" Width="46" Height="46" HorizontalAlignment="Center" VerticalAlignment="Top">
                 <Path
                     Width="46"
                     Height="32"
@@ -84,9 +105,10 @@
             </Button>
             <Button
                 Name="restoreButton"
-                Grid.Column="3"
+                Grid.Row="0" Grid.RowSpan="2"
+                Grid.Column="5"
                 Click="OnMaximizeRestoreButtonClick"
-                Style="{StaticResource TitleBarButtonStyle}">
+                Style="{StaticResource TitleBarButtonStyle}" Width="46" Height="46" HorizontalAlignment="Center" VerticalAlignment="Top">
                 <Path
                     Width="46"
                     Height="32"
@@ -96,9 +118,10 @@
                     StrokeThickness="1" />
             </Button>
             <Button
-                Grid.Column="4"
+                Grid.Column="6"
+                Grid.Row="0" Grid.RowSpan="2"
                 Click="OnCloseButtonClick"
-                Style="{StaticResource TitleBarCloseButtonStyle}">
+                Style="{StaticResource TitleBarCloseButtonStyle}" Width="46" Height="46" HorizontalAlignment="Center" VerticalAlignment="Top">
                 <Path
                     Width="46"
                     Height="32"
@@ -107,37 +130,33 @@
                                      RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
                     StrokeThickness="1" />
             </Button>
+            <Image Grid.Column="2" Grid.Row="0" Grid.RowSpan="4"
+                   Source="/BannerLordLauncher;component/Assets/banner.png" Width="594" Height="154" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <Button Style="{StaticResource Button4}" Grid.Column="3" Grid.ColumnSpan="4" Grid.Row="2" Grid.RowSpan="2" Name="Run" Command="{Binding Run}" ClickMode="Release" ToolTip="Run Game" Width="76" Height="105" HorizontalAlignment="Center" VerticalAlignment="Center"></Button>
         </Grid>
         <StackPanel DockPanel.Dock="Left" Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Center" RenderTransformOrigin="0.534,0.517">
-            <Button Style="{StaticResource MoveBtn}" Name="MoveToTop" Command="{Binding MoveToTop}" ClickMode="Release" ToolTip="Move selection to top" Margin="5,2,2,1">
-                <iconPacks:PackIconMaterial Kind="ChevronDoubleUp" Width="32" Height="32"/>
+            <Button Style="{StaticResource Button1}" Name="MoveToTop" Command="{Binding MoveToTop}" ClickMode="Release" ToolTip="Move selection to top" Margin="5,0,5,0">
+                <iconPacks:PackIconMaterial Kind="ChevronDoubleUp" Width="22" Height="22"/>
             </Button>
-            <Button Style="{StaticResource MoveBtn}" Name="MoveUp" Command="{Binding MoveUp}" ClickMode="Release" ToolTip="Move selection up"  Margin="5,1,2,2">
-                <iconPacks:PackIconMaterial Kind="ChevronUp" Width="32" Height="32"/>
+            <Button Style="{StaticResource Button1}" Name="MoveUp" Command="{Binding MoveUp}" ClickMode="Release" ToolTip="Move selection up"  Margin="5,0,5,1">
+                <iconPacks:PackIconMaterial Kind="ChevronUp" Width="22" Height="22"/>
             </Button>
-            <Button Style="{StaticResource MoveBtn}" Name="MoveDown" Command="{Binding MoveDown}" ClickMode="Release" ToolTip="Move selection down"  Margin="5,5,2,1">
-                <iconPacks:PackIconMaterial Kind="ChevronDown" Width="32" Height="32"/>
+            <Button Style="{StaticResource Button1}" Name="MoveDown" Command="{Binding MoveDown}" ClickMode="Release" ToolTip="Move selection down"  Margin="5,1,5,0">
+                <iconPacks:PackIconMaterial Kind="ChevronDown" Width="22" Height="22"/>
             </Button>
-            <Button Style="{StaticResource MoveBtn}" Name="MoveToBottom" Command="{Binding MoveToBottom}" ClickMode="Release" ToolTip="Move selection to bottom"  Margin="5,1,2,2">
-                <iconPacks:PackIconMaterial Kind="ChevronDoubleDown" Width="32" Height="32"/>
+            <Button Style="{StaticResource Button1}" Name="MoveToBottom" Command="{Binding MoveToBottom}" ClickMode="Release" ToolTip="Move selection to bottom"  Margin="5,0,5,2">
+                <iconPacks:PackIconMaterial Kind="ChevronDoubleDown" Width="22" Height="22"/>
             </Button>
-            <Button Style="{StaticResource MoveBtn}" Name="Sort" Command="{Binding Sort}" ClickMode="Release" ToolTip="Sort"  Margin="5,10,2,2">
-                <iconPacks:PackIconMaterial Kind="Sort" Width="32" Height="32" />
+            <Button Style="{StaticResource Button1}" Name="Sort" Command="{Binding Sort}" ClickMode="Release" ToolTip="Sort"  Margin="5,2,5,0">
+                <iconPacks:PackIconMaterial Kind="Sort" Width="22" Height="22" />
             </Button>
         </StackPanel>
         <Grid DockPanel.Dock="Top">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="125"/>
             </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-            </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="BannerLord" HorizontalAlignment="Center" FontFamily="/Assets/Fonts/#Viking-Normal" FontSize="32" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-            <TextBlock Grid.Row="1" Grid.Column="0" Text="Mod Launcher" FontFamily="/Assets/Fonts/#Viking-Normal" FontSize="32" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
-            <Button Style="{StaticResource MyButton}" Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" Name="Run" Command="{Binding Run}" ClickMode="Release" ToolTip="Run Game" Margin="10,21,10,21" Width="100">PLAY</Button>
         </Grid>
         <Grid DockPanel.Dock="Bottom" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
@@ -151,14 +170,14 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
-            <Button  Grid.Row="0" Grid.Column="0" Style="{StaticResource MyButton}" Name="CheckAll" Command="{Binding CheckAll}" ClickMode="Release" ToolTip="Enable all mods" Margin="2,2,2,2">ALL</Button>
-            <Button  Grid.Row="0" Grid.Column="1" Style="{StaticResource MyButton}" Name="UncheckAll" Command="{Binding UncheckAll}" ClickMode="Release" ToolTip="Disable all mods"  Margin="2,2,2,2">NONE</Button>
-            <Button  Grid.Row="0" Grid.Column="2" Style="{StaticResource MyButton}" Name="InvertCheck" Command="{Binding InvertCheck}" ClickMode="Release" ToolTip="Switch enabled/disabled mods" Margin="2,2,2,2">INVERT</Button>
+            <Button  Grid.Row="0" Grid.Column="0" Style="{StaticResource Button2}" Name="CheckAll" Command="{Binding CheckAll}" ClickMode="Release" ToolTip="Enable all mods" Margin="2,2,2,2">ALL</Button>
+            <Button  Grid.Row="0" Grid.Column="1" Style="{StaticResource Button2}" Name="UncheckAll" Command="{Binding UncheckAll}" ClickMode="Release" ToolTip="Disable all mods"  Margin="2,2,2,2">NONE</Button>
+            <Button  Grid.Row="0" Grid.Column="2" Style="{StaticResource Button2}" Name="InvertCheck" Command="{Binding InvertCheck}" ClickMode="Release" ToolTip="Switch enabled/disabled mods" Margin="2,2,2,2">INVERT</Button>
             <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
                 <TextBlock Text="SELECTION" HorizontalAlignment="Center" Padding="0,0,0,0" VerticalAlignment="Stretch" FontSize="20" FontFamily="/Assets/Fonts/#Candara" Foreground="{DynamicResource PackIconMaterialForeground1}"/>
             </StackPanel>
-            <Button  Grid.Row="0" Grid.Column="4" Style="{StaticResource MyButton}" Name="Config" Command="{Binding Config}" ClickMode="Release" ToolTip="Open config folder" Width="160" Margin="0,0,10,2">CONFIG DIR.</Button>
-            <Button  Grid.Row="1" Grid.Column="4" Style="{StaticResource MyButton}" Name="Save" Command="{Binding Save}" ClickMode="Release" ToolTip="Save the mod order" Width="160" Margin="0,2,10,4">SAVE</Button>
+            <Button  Grid.Row="0" Grid.Column="4" Style="{StaticResource Button2}" Name="Config" Command="{Binding Config}" ClickMode="Release" ToolTip="Open config folder" Margin="0,0,10,2">CONFIG DIR.</Button>
+            <Button  Grid.Row="1" Grid.Column="4" Style="{StaticResource Button2}" Name="Save" Command="{Binding Save}" ClickMode="Release" ToolTip="Save the mod order" Margin="0,2,10,4">SAVE</Button>
         </Grid>
         <ListBox ItemContainerStyle="{DynamicResource ModListContainerEntry}" 
             ItemsSource="{Binding Manager.Mods}" 
@@ -172,7 +191,12 @@
             dd:DragDrop.DropHandler="{Binding}" 
             HorizontalContentAlignment="Stretch" 
             ItemTemplate="{StaticResource ModListEntry }"
-            SelectionMode="Single" Background="{x:Null}">
+            SelectionMode="Single" Background="{DynamicResource StackPanelBackground1}">
+            <ListBox.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Copy" Command="{Binding Copy}"/>
+                </ContextMenu>
+            </ListBox.ContextMenu>
             <ListBox.Resources>
                 <Style TargetType="{x:Type ScrollBar}">
                     <Setter Property="SnapsToDevicePixels" Value="True" />

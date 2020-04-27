@@ -35,5 +35,13 @@ namespace BannerLord.Common
             get => this._isMissing;
             set => this.RaiseAndSetIfChanged(ref this._isMissing, value);
         }
+
+        private bool _optional;
+
+        public bool Optional
+        {
+            get => this._optional;
+            set => this.RaiseAndSetIfChanged(ref this._optional, value);
+        }
     }
 }

@@ -19,12 +19,14 @@ namespace BannerLord.Common.Xml
         public List<string> DependedModules { get; set; }
         public List<SubModule> SubModules { get; set; }
         public List<SubModule> DelayedSubModules { get; set; }
+        public List<string> OptionalDependModules { get; set; }
 
         public Module()
         {
             this.DependedModules = new List<string>();
             this.SubModules = new List<SubModule>();
             this.DelayedSubModules = new List<SubModule>();
+            this.OptionalDependModules = new List<string>();
         }
 
         public static Module Load(ModManager manager, string directoryName, string gamePath)
@@ -75,6 +77,12 @@ namespace BannerLord.Common.Xml
                         var value = dependedModulesList[i].Attributes["Id"]?.InnerText;
                         if (!string.IsNullOrEmpty(value)) ret.DependedModules.Add(value);
                     }
+                    dependedModulesList = dependedModules.SelectNodes("OptionalDependModule");
+                    for (var i = 0; i < dependedModulesList.Count; i++)
+                    {
+                        var value = dependedModulesList[i].Attributes["Id"]?.InnerText;
+                        if (!string.IsNullOrEmpty(value)) ret.OptionalDependModules.Add(value);
+                    }
                 }
                 var subModules = module.SelectSingleNode("SubModules");
                 if (subModules != null)
@@ -95,6 +103,29 @@ namespace BannerLord.Common.Xml
                     {
                         var subModule = SubModule.Load(subModulesList[i]);
                         if (subModule != null) ret.DelayedSubModules.Add(subModule);
+                    }
+                    subModulesList = delayedSubModules.SelectNodes("DelayedSubModule");
+                    for (var i = 0; i < subModulesList.Count; i++)
+                    {
+                        var subModule = SubModule.Load(subModulesList[i]);
+                        if (subModule != null) ret.DelayedSubModules.Add(subModule);
+                    }
+
+                }
+                var optionalDependModules = module.SelectSingleNode("OptionalDependModules");
+                if (optionalDependModules != null)
+                {
+                    var optionalDependModuleList = optionalDependModules.SelectNodes("OptionalDependModule");
+                    for (var i = 0; i < optionalDependModuleList.Count; i++)
+                    {
+                        var value = optionalDependModuleList[i].Attributes["Id"]?.InnerText;
+                        if (!string.IsNullOrEmpty(value)) ret.OptionalDependModules.Add(value);
+                    }
+                    optionalDependModuleList = dependedModules.SelectNodes("DependModule");
+                    for (var i = 0; i < optionalDependModuleList.Count; i++)
+                    {
+                        var value = optionalDependModuleList[i].Attributes["Id"]?.InnerText;
+                        if (!string.IsNullOrEmpty(value)) ret.OptionalDependModules.Add(value);
                     }
                 }
 

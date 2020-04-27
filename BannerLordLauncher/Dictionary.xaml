@@ -81,7 +81,7 @@
                     <BulletDecorator Background="Transparent">
                         <BulletDecorator.Bullet>
                             <Grid>
-                                <iconPacks:PackIconMaterial x:Name="CheckedMark" Focusable="False" Kind="Check" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}"/>
+                                <iconPacks:PackIconRPGAwesome x:Name="CheckedMark" Focusable="False" Kind="Broadsword" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}"/>
                             </Grid>
                         </BulletDecorator.Bullet>
                     </BulletDecorator>
@@ -98,6 +98,34 @@
         </Setter>
     </Style>
     
+    <Style x:Key="OptionsCheckBox" TargetType="{x:Type CheckBox}">
+        <Setter Property="Background" Value="{StaticResource StackPanelBackground1}"/>
+        <Setter Property="Foreground" Value="{StaticResource ModListItemCommunity}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource PackIconMaterialBorderBrush1}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type CheckBox}">
+                    <BulletDecorator Background="Transparent">
+                        <BulletDecorator.Bullet>
+                            <Grid>
+                                <iconPacks:PackIconRPGAwesome x:Name="CheckedMark" Focusable="False" Kind="Broadsword" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"/>
+                            </Grid>
+                        </BulletDecorator.Bullet>
+                    </BulletDecorator>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="true">
+                            <Setter Property="Foreground" TargetName="CheckedMark" Value="{StaticResource ModListItemCommunity}"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="false">
+                            <Setter Property="Foreground" TargetName="CheckedMark" Value="{StaticResource ModListCheckEmpty}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="TitleBarButtonStyle" TargetType="Button">
         <Setter Property="Foreground" Value="{StaticResource PackIconMaterialForeground1}" />
         <Setter Property="Padding" Value="0" />
@@ -173,17 +201,15 @@
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="16" MaxWidth="16" MinWidth="16" />
-                <ColumnDefinition Width="16" MaxWidth="16" MinWidth="16" />
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="16" MaxWidth="16" MinWidth="16" />
             </Grid.ColumnDefinitions>
             <CheckBox Focusable="False" Grid.Column="0" IsChecked="{Binding IsChecked}" VerticalAlignment="Center" Visibility="{Binding IsCheckboxEnabled, Converter={StaticResource BoolToVisConverter}}" BorderThickness="0" Style="{StaticResource ModListCheckbox}"/>
-            <iconPacks:PackIconMaterial  Grid.Column="1" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemNative}" Kind="AccountTie" Visibility="{Binding Module.Official, Converter={StaticResource BoolToVisConverter}}" ToolTip="Official mod"/>
-            <iconPacks:PackIconMaterial  Grid.Column="1" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemCommunity}" Kind="AccountGroup" Visibility="{Binding Module.Official, Converter={StaticResource BoolToVisConverterInv}}" ToolTip="Community mod"/>
-            <TextBlock Focusable="False" Grid.Column="2" Text="{Binding DisplayName}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="/Assets/Fonts/#Candara" FontSize="15" VerticalAlignment="Center"/>
-            <TextBlock Focusable="False" Grid.Column="3" Text="{Binding Module.Version}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="Consolas" FontSize="15" VerticalAlignment="Center"/>
-            <iconPacks:PackIconMaterial Grid.Column="4" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemCommunity}" Kind="AlertCircleOutline" Visibility="{Binding HasConflicts, Converter={StaticResource BoolToVisConverter}}" ToolTip="{Binding Conflicts}"/>
+            <iconPacks:PackIconRPGAwesome  Grid.Column="0" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemNative}" Kind="CrossedSwords" Visibility="{Binding Module.Official, Converter={StaticResource BoolToVisConverter}}" ToolTip="Official mod"/>
+            <TextBlock Focusable="False" Grid.Column="1" Text="{Binding DisplayName}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="/Assets/Fonts/#Candara" FontSize="15" VerticalAlignment="Center"/>
+            <TextBlock Focusable="False" Grid.Column="2" Text="{Binding Module.Version}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="Consolas" FontSize="15" VerticalAlignment="Center"/>
+            <iconPacks:PackIconMaterial Grid.Column="3" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemCommunity}" Kind="AlertCircleOutline" Visibility="{Binding HasConflicts, Converter={StaticResource BoolToVisConverter}}" ToolTip="{Binding Conflicts}"/>
         </Grid>
     </DataTemplate>
 
@@ -282,4 +308,259 @@
         </Setter>
     </Style>
     
+    <ImageBrush x:Key="Button1_NormalBrush" ImageSource="/BannerLordLauncher;component/Assets/box_normal.png"/>
+    <ImageBrush x:Key="Button1_PressedBrush" ImageSource="/BannerLordLauncher;component/Assets/box_active.png"/>
+    <ImageBrush x:Key="Button1_MouseOverBrush" ImageSource="/BannerLordLauncher;component/Assets/box_hover.png"/>
+    
+    <Style x:Key="Button1" TargetType="{x:Type Button}" BasedOn="{x:Null}">
+        <Setter Property="Background" Value="{StaticResource Button1_NormalBrush}"/>
+        <Setter Property="Width" Value="64"/>
+        <Setter Property="Height" Value="64"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="{StaticResource ModListItemCommunity}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    
+                    <!-- We use Grid as a root because it is easy to add more elements to customize the button -->
+                    <Grid x:Name="Grid">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"/>
+                        
+                        <!-- Content Presenter is where the text content etc is placed by the control -->
+                        <!-- The bindings are useful so that the control can be parameterized without editing the template -->
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True"/>
+                    </Grid>
+                    
+                    <!--Each state sets a brush on the Border in the template -->
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter Property="Background" Value="{StaticResource Button1_MouseOverBrush}" TargetName="Border"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="true">
+                            <Setter Property="Background" Value="{StaticResource Button1_PressedBrush}" TargetName="Border"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="true"/>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Background" Value="{StaticResource Button1_PressedBrush}" TargetName="Border"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <Style x:Key="Button3" TargetType="{x:Type Button}" BasedOn="{x:Null}">
+        <Setter Property="Background" Value="{StaticResource Button1_NormalBrush}"/>
+        <Setter Property="Width" Value="19"/>
+        <Setter Property="Height" Value="19"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="{StaticResource ModListItemCommunity}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    
+                    <!-- We use Grid as a root because it is easy to add more elements to customize the button -->
+                    <Grid x:Name="Grid">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"/>
+                        
+                        <!-- Content Presenter is where the text content etc is placed by the control -->
+                        <!-- The bindings are useful so that the control can be parameterized without editing the template -->
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True"/>
+                    </Grid>
+                    
+                    <!--Each state sets a brush on the Border in the template -->
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter Property="Background" Value="{StaticResource Button1_MouseOverBrush}" TargetName="Border"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="true">
+                            <Setter Property="Background" Value="{StaticResource Button1_PressedBrush}" TargetName="Border"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="true"/>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Background" Value="{StaticResource Button1_PressedBrush}" TargetName="Border"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <ImageBrush x:Key="Button2_NormalBrush" ImageSource="/BannerLordLauncher;component/Assets/button_normal.png"/>
+    <ImageBrush x:Key="Button2_PressedBrush" ImageSource="/BannerLordLauncher;component/Assets/button_active.png"/>
+    <ImageBrush x:Key="Button2_MouseOverBrush" ImageSource="/BannerLordLauncher;component/Assets/button_hover.png"/>
+    
+    <Style x:Key="Button2" TargetType="{x:Type Button}" BasedOn="{x:Null}">
+        <Setter Property="Background" Value="{StaticResource Button2_NormalBrush}"/>
+        <Setter Property="Width" Value="105"/>
+        <Setter Property="Height" Value="33"/>
+        <Setter Property="Foreground" Value="{StaticResource ModListItemCommunity}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontFamily" Value="/Assets/Fonts/#Final Frontier" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    
+                    <!-- We use Grid as a root because it is easy to add more elements to customize the button -->
+                    <Grid x:Name="Grid">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"/>
+                        
+                        <!-- Content Presenter is where the text content etc is placed by the control -->
+                        <!-- The bindings are useful so that the control can be parameterized without editing the template -->
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True"/>
+                    </Grid>
+                    
+                    <!--Each state sets a brush on the Border in the template -->
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter Property="Background" Value="{StaticResource Button2_MouseOverBrush}" TargetName="Border"/>
+                            <Setter Property="Foreground" Value="#b3a795"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="true">
+                            <Setter Property="Background" Value="{StaticResource Button2_PressedBrush}" TargetName="Border"/>
+                            <Setter Property="Foreground" Value="#7c7469"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="true"/>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Background" Value="{StaticResource Button2_PressedBrush}" TargetName="Border"/>
+                            <Setter Property="Foreground" Value="#7c7469"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <ImageBrush x:Key="Button4_NormalBrush" ImageSource="/BannerLordLauncher;component/Assets/window_normal.png"/>
+    <ImageBrush x:Key="Button4_PressedBrush" ImageSource="/BannerLordLauncher;component/Assets/window_hover.png"/>
+    <ImageBrush x:Key="Button4_MouseOverBrush" ImageSource="/BannerLordLauncher;component/Assets/window_hover.png"/>
+    <Style x:Key="Button4" TargetType="{x:Type Button}" BasedOn="{x:Null}">
+        <Setter Property="Background" Value="{StaticResource Button4_NormalBrush}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    
+                    <!-- We use Grid as a root because it is easy to add more elements to customize the button -->
+                    <Grid x:Name="Grid">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"/>
+                        
+                        <!-- Content Presenter is where the text content etc is placed by the control -->
+                        <!-- The bindings are useful so that the control can be parameterized without editing the template -->
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True"/>
+                    </Grid>
+                    
+                    <!--Each state sets a brush on the Border in the template -->
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter Property="Background" Value="{StaticResource Button4_MouseOverBrush}" TargetName="Border"/>
+                            <Setter Property="Foreground" Value="#b3a795"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="true">
+                            <Setter Property="Background" Value="{StaticResource Button4_PressedBrush}" TargetName="Border"/>
+                            <Setter Property="Foreground" Value="#7c7469"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="true"/>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Background" Value="{StaticResource Button4_PressedBrush}" TargetName="Border"/>
+                            <Setter Property="Foreground" Value="#7c7469"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <SolidColorBrush x:Key="GlyphBrush" Color="#444" />
+    <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="{x:Type ToggleButton}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="20" />
+        </Grid.ColumnDefinitions>
+        <Rectangle Grid.ColumnSpan="2" HorizontalAlignment="Stretch" x:Name="Rectangle" VerticalAlignment="Stretch" Width="Auto" Height="Auto" RadiusX="5" RadiusY="5" Fill="{StaticResource PackIconMaterialBackground1}" Stroke="{StaticResource PackIconMaterialBorderBrush1}" />
+        <Rectangle Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto" RadiusX="5" RadiusY="5" Fill="{StaticResource StackPanelBackground1}" Stroke="{StaticResource PackIconMaterialBorderBrush1}" />
+        <Path Grid.Column="1" HorizontalAlignment="Center" x:Name="Arrow" VerticalAlignment="Center" Fill="{StaticResource GlyphBrush}" Data="M 0 0 L 4 4 L 8 0 Z" />
+    </Grid>
+    <ControlTemplate.Triggers>
+        <Trigger Property="IsMouseOver" Value="true">
+            <Setter Property="Stroke" Value="{StaticResource PackIconMaterialBorderBrush2}" TargetName="Rectangle" />
+        </Trigger>
+        <Trigger Property="IsChecked" Value="true">
+            <Setter Property="Stroke" Value="{StaticResource PackIconMaterialBorderBrush2}" TargetName="Rectangle" />
+        </Trigger>
+    </ControlTemplate.Triggers>
+</ControlTemplate>
+    
+    <Style x:Key="SimpleComboBox" TargetType="{x:Type ComboBox}">
+        <Setter Property="SnapsToDevicePixels" Value="true" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBox}">
+                    <Grid>
+                        <!-- The ToggleButton is databound to the ComboBox itself to toggle IsDropDownOpen -->
+                        <ToggleButton Grid.Column="2" Template="{StaticResource ComboBoxToggleButton}" x:Name="ToggleButton" Focusable="false" IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press" />
+                        <ContentPresenter HorizontalAlignment="Left" Margin="3,3,23,3" x:Name="ContentSite" VerticalAlignment="Center" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" IsHitTestVisible="False" />
+
+                        <!-- The TextBox must be named PART_EditableTextBox or ComboBox will not recognize it -->
+                        <TextBox Visibility="Hidden" Template="{DynamicResource ComboBoxTextBox}" HorizontalAlignment="Left" Margin="3,3,23,3" x:Name="PART_EditableTextBox" Style="{x:Null}" VerticalAlignment="Center" Focusable="True" Background="Transparent" IsReadOnly="{TemplateBinding IsReadOnly}" />
+
+                        <!-- The Popup shows the list of items in the ComboBox. IsOpen is databound to IsDropDownOpen which is toggled via the ComboBoxToggleButton -->
+                        <Popup IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" x:Name="Popup" Focusable="False" AllowsTransparency="True" PopupAnimation="Slide">
+                            <Grid MaxHeight="{TemplateBinding MaxDropDownHeight}" MinWidth="{TemplateBinding ActualWidth}" x:Name="DropDown" SnapsToDevicePixels="True">
+                                <Border x:Name="DropDownBorder" Background="{DynamicResource StackPanelBackground1}" BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" BorderThickness="1" />
+                                <ScrollViewer Margin="4,6,4,6" Background="{DynamicResource StackPanelBackground1}" SnapsToDevicePixels="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+
+                                    <!-- The StackPanel is used to display the children by setting IsItemsHost to be True -->
+                                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                </ScrollViewer>
+                            </Grid>
+                        </Popup>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Simple ComboBoxItem - This is used for each item inside of the ComboBox. You can change the selected color of each item below-->
+    <Style x:Key="SimpleComboBoxItem" TargetType="{x:Type ComboBoxItem}">
+        <Setter Property="SnapsToDevicePixels" Value="true" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                    <Grid SnapsToDevicePixels="true">
+                        <Border x:Name="Border" Background="{StaticResource StackPanelBackground1}" BorderBrush="Transparent" BorderThickness="{TemplateBinding BorderThickness}" />
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+
+                        <!-- Change IsHighlighted SelectedBackgroundBrush to set the selection color for the items -->
+                        <Trigger Property="IsHighlighted" Value="true">
+                            <Setter Property="BorderBrush" Value="{StaticResource PackIconMaterialBorderBrush2}" TargetName="Border" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <ItemsPanelTemplate x:Key="MenuItemPanelTemplate">
+        <StackPanel Margin="-20,0,0,0" Background="{StaticResource StackPanelBackground1}"/>
+    </ItemsPanelTemplate>
+
+    <Style TargetType="{x:Type MenuItem}">
+        <Setter Property="Foreground" Value="{StaticResource PackIconMaterialForeground1}"/>
+        <Setter Property="ItemsPanel" Value="{StaticResource MenuItemPanelTemplate}"/>
+    </Style>
+    
+    <Style TargetType="{x:Type ContextMenu}">
+        <Setter Property="ItemsPanel" Value="{StaticResource MenuItemPanelTemplate}"/>
+        <Setter Property="Background" Value="{StaticResource StackPanelBackground1}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource PackIconMaterialBorderBrush1}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
 </ResourceDictionary>
