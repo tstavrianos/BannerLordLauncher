@@ -1,12 +1,10 @@
 ﻿using System;
-using System.IO;
+using Alphaleonis.Win32.Filesystem;
 using System.Reactive.Linq;
 using System.Windows.Input;
 using BannerLord.Common;
 using BannerLordLauncher.Views;
 using ReactiveUI;
-using Steam.Common;
-using Ookii.Dialogs.Wpf;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
@@ -72,8 +70,6 @@ namespace BannerLordLauncher.ViewModels
             var moveDown = this.WhenAnyValue(x => x.SelectedIndex).Select(x => x >= 0 && x < this.Manager.Mods.Count - 1);
 
             this.Save = ReactiveCommand.Create(this.SaveCmd);
-            //this.AlphaSort = ReactiveCommand.Create(() => this.Manager.AlphaSort());
-            //this.ReverseOrder = ReactiveCommand.Create(() => this.Manager.ReverseOrder());
             this.Sort = ReactiveCommand.Create(this.SortCmd);
             this.MoveToTop = ReactiveCommand.Create(this.MoveToTopCmd, moveUp.Select(x => x));
             this.MoveUp = ReactiveCommand.Create(this.MoveUpCmd, moveUp.Select(x => x));
@@ -87,22 +83,17 @@ namespace BannerLordLauncher.ViewModels
             this.Copy = ReactiveCommand.Create(() => Clipboard.SetText(string.Join(Environment.NewLine, this.Manager.Mods.Where(x => x.UserModData.IsSelected).Select(x => x.Module.Id))));
         }
 
-        private static void RunInDispatcher(Action a)
+        private void SafeMessage(string message)
         {
             Debug.Assert(Application.Current.Dispatcher != null, "Application.Current.Dispatcher != null");
             if (Application.Current.Dispatcher.CheckAccess())
             {
-                a();
+                MyMessageBox.Show(Application.Current.MainWindow, message);
             }
             else
             {
-                Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, a);
+                Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => MyMessageBox.Show(Application.Current.MainWindow, message)));
             }
-        }
-
-        private void SafeMessage(string message)
-        {
-            RunInDispatcher(() => MyMessageBox.Show(this._window, message));
         }
 
         private async void CheckForUpdates()
@@ -217,23 +208,23 @@ namespace BannerLordLauncher.ViewModels
 
         public void Initialize()
         {
-            if (!this.Manager.Initialize(this._window.Configuration.ConfigPath, this._window.Configuration.GamePath, out var error))
+            if (!this.Manager.Initialize(Program.Configuration.ConfigPath, Program.Configuration.GamePath, out var error))
             {
                 if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
             }
 
-            if (this._window.Configuration.CheckForUpdates) this.CheckForUpdates();
+            if (Program.Configuration.CheckForUpdates) this.CheckForUpdates();
         }
 
         private void RunCmd()
         {
-            if (!this.Manager.Run(this._window.Configuration.GameExeId == 1 ? "Bannerlord.Native.exe" : "Bannerlord.exe", this._window.Configuration.ExtraGameArguments, out var error))
+            if (!this.Manager.Run(Program.Configuration.GameExeId == 1 ? "Bannerlord.Native.exe" : "Bannerlord.exe", Program.Configuration.ExtraGameArguments, out var error))
             {
                 if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
                 return;
             }
 
-            if (this._window.Configuration.CloseWhenRunningGame) Application.Current.Shutdown();
+            if (Program.Configuration.CloseWhenRunningGame) Application.Current.Shutdown();
         }
 
         private void SaveCmd()
@@ -304,7 +295,7 @@ namespace BannerLordLauncher.ViewModels
 
         public bool CanRun(string gameExe, string extraGameArguments)
         {
-            if (this._ignoredWarning && this.Manager.Mods.Any(x => x.HasConflicts) && this._window.Configuration.WarnOnConflict)
+            if (this._ignoredWarning && this.Manager.Mods.Any(x => x.HasConflicts) && Program.Configuration.WarnOnConflict)
             {
                 if (MyMessageBox.Show(
                         this._window,
@@ -349,7 +340,7 @@ namespace BannerLordLauncher.ViewModels
         {
             this._ignoredWarning = false;
             if (!this.Manager.Mods.Any(x => x.HasConflicts)) return true;
-            if (this._window.Configuration.WarnOnConflict)
+            if (Program.Configuration.WarnOnConflict)
             {
                 if (MyMessageBox.Show(
                         this._window,

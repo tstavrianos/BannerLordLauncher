@@ -1,4 +1,4 @@
-﻿using System.IO;
+﻿using Alphaleonis.Win32.Filesystem;
 using BannerLordLauncher.ViewModels;
 using Newtonsoft.Json;
 using System;
@@ -11,44 +11,33 @@ namespace BannerLordLauncher.Views
 
     public partial class MainWindow
     {
-        internal AppConfig Configuration { get; }
-        private readonly string _configurationFilePath;
-
         public MainWindow()
         {
-            this._configurationFilePath = Path.Combine(GetApplicationRoot(), "configuration.json");
-            try
-            {
-                if (File.Exists(this._configurationFilePath))
-                {
-                    this.Configuration =
-                        JsonConvert.DeserializeObject<AppConfig>(File.ReadAllText(this._configurationFilePath));
-                }
-            }
-            catch
-            {
-                this.Configuration = null;
-            }
+            this.InitializeComponent();
 
-            if (this.Configuration?.Version == null)
+            var model = new MainWindowViewModel(this);
+            this.DataContext = model;
+        }
+
+        private void OnActivated(object sender, EventArgs eventArgs)
+        {
+            if (Program.Configuration?.Version == null)
             {
                 var o = new OptionsDialog();
+                o.Owner = this;
                 o.ShowDialog();
                 if (o.Result)
                 {
-                    this.Configuration = o.Config;
+                    Program.Configuration = o.Config;
                 }
                 else
                 {
                     Environment.Exit(0);
                 }
             }
-
-            this.InitializeComponent();
-
-            var model = new MainWindowViewModel(this);
-            this.DataContext = model;
-            model.Initialize();
+            (this.DataContext as MainWindowViewModel).Initialize();
+            this.SetPlacement(Program.Configuration.Placement);
+            this.Activated -= this.OnActivated;
         }
 
         private static string GetApplicationRoot()
@@ -56,22 +45,16 @@ namespace BannerLordLauncher.Views
             return Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
         }
 
-        protected override void OnSourceInitialized(EventArgs e)
-        {
-            base.OnSourceInitialized(e);
-            this.SetPlacement(this.Configuration.Placement);
-        }
-
         protected override void OnClosing(CancelEventArgs e)
         {
             base.OnClosing(e);
-            this.Configuration.Placement = this.GetPlacement();
+            Program.Configuration.Placement = this.GetPlacement();
             var settings = new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, Formatting = Formatting.Indented };
             try
             {
                 File.WriteAllText(
-                    this._configurationFilePath,
-                    JsonConvert.SerializeObject(this.Configuration, settings));
+                    Program.ConfigurationFilePath,
+                    JsonConvert.SerializeObject(Program.Configuration, settings));
             }
             catch (Exception ex)
             {
@@ -82,16 +65,10 @@ namespace BannerLordLauncher.Views
         private void ButtonBase_OnClickCog(object sender, RoutedEventArgs e)
         {
             var w = new OptionsDialog();
+            w.Owner = this;
             w.ShowDialog();
             if (!w.Result) return;
-            this.Configuration.GamePath = w.Config.GamePath;
-            this.Configuration.ConfigPath = w.Config.ConfigPath;
-            this.Configuration.CheckForUpdates = w.Config.CheckForUpdates;
-            this.Configuration.CloseWhenRunningGame = w.Config.CloseWhenRunningGame;
-            this.Configuration.SubmitCrashLogs = w.Config.SubmitCrashLogs;
-            this.Configuration.WarnOnConflict = w.Config.WarnOnConflict;
-            this.Configuration.ExtraGameArguments = w.Config.ExtraGameArguments;
-            this.Configuration.GameExeId = w.Config.GameExeId;
+            Program.Configuration.CopyFrom(w.Config);
         }
 
         private void RefreshMaximizeRestoreButton()

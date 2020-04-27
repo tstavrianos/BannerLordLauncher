@@ -33,5 +33,17 @@ namespace BannerLordLauncher
 
         [JsonProperty("gameExeId")]
         public int GameExeId { get; set; }
+
+        public void CopyFrom(AppConfig other)
+        {
+            this.GamePath = other.GamePath;
+            this.ConfigPath = other.ConfigPath;
+            this.CheckForUpdates = other.CheckForUpdates;
+            this.CloseWhenRunningGame = other.CloseWhenRunningGame;
+            this.SubmitCrashLogs = other.SubmitCrashLogs;
+            this.WarnOnConflict = other.WarnOnConflict;
+            this.ExtraGameArguments = other.ExtraGameArguments;
+            this.GameExeId = other.GameExeId;
+        }
     }
 }

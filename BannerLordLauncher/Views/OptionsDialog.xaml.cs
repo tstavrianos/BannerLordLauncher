@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace BannerLordLauncher.Views
 {
     using System.Diagnostics;
-    using System.IO;
+    using Alphaleonis.Win32.Filesystem;
     using System.Windows.Threading;
 
     using BannerLordLauncher.Controls.MessageBox;
@@ -33,25 +24,12 @@ namespace BannerLordLauncher.Views
     {
         public AppConfig Config { get; }
 
-        private readonly string _configurationFilePath;
-
         public bool Result { get; private set; }
         public OptionsDialog()
         {
-            this._configurationFilePath = Path.Combine(GetApplicationRoot(), "configuration.json");
-            try
-            {
-                if (File.Exists(this._configurationFilePath))
-                {
-                    this.Config =
-                        JsonConvert.DeserializeObject<AppConfig>(File.ReadAllText(this._configurationFilePath));
-                }
-            }
-            catch
-            {
-                this.Config = null;
-            }
-
+            this.Config = new AppConfig();
+            if (Program.Configuration != null)
+                this.Config.CopyFrom(Program.Configuration);
             if (this.Config?.Version == null)
             {
                 var basePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -125,39 +103,21 @@ namespace BannerLordLauncher.Views
 
             if (!ValidConfigFolder(this.Config.ConfigPath) || !ValidGameFolder(this.Config.GamePath)) return;
 
-            var settings = new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, Formatting = Formatting.Indented };
-            try
-            {
-                File.WriteAllText(
-                    this._configurationFilePath,
-                    JsonConvert.SerializeObject(this.Config, settings));
-                this.Result = true;
-                this.Close();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error writing the configuration to disk");
-                this.SafeMessage(ex.Message);
-                this.Result = false;
-            }
-        }
-
-        private static void RunInDispatcher(Action a)
-        {
-            Debug.Assert(Application.Current.Dispatcher != null, "Application.Current.Dispatcher != null");
-            if (Application.Current.Dispatcher.CheckAccess())
-            {
-                a();
-            }
-            else
-            {
-                Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, a);
-            }
+            this.Result = true;
+            this.Close();
         }
 
         private void SafeMessage(string message)
         {
-            RunInDispatcher(() => MyMessageBox.Show(this, message));
+            Debug.Assert(Application.Current.Dispatcher != null, "Application.Current.Dispatcher != null");
+            if (Application.Current.Dispatcher.CheckAccess())
+            {
+                MyMessageBox.Show(this, message);
+            }
+            else
+            {
+                Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => MyMessageBox.Show(this, message)));
+            }
         }
 
         private string FindGameFolder()

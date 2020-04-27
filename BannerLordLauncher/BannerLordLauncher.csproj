@@ -56,6 +56,9 @@
     <ApplicationIcon>ML.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AlphaFS, Version=2.2.0.0, Culture=neutral, PublicKeyToken=4d31a58f7d7ad5c9, processorArchitecture=MSIL">
+      <HintPath>..\packages\AlphaFS.2.2.6\lib\net452\AlphaFS.dll</HintPath>
+    </Reference>
     <Reference Include="Costura, Version=4.1.0.0, Culture=neutral, PublicKeyToken=9919ef960d84173d">
       <HintPath>..\packages\Costura.Fody.4.1.0\lib\net40\Costura.dll</HintPath>
       <Private>True</Private>
@@ -91,13 +94,11 @@
       <HintPath>..\packages\Ookii.Dialogs.Wpf.1.1.0\lib\net45\Ookii.Dialogs.Wpf.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ReactiveUI, Version=11.3.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\ReactiveUI.11.3.7\lib\net461\ReactiveUI.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="ReactiveUI, Version=11.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ReactiveUI.11.3.8\lib\net461\ReactiveUI.dll</HintPath>
     </Reference>
-    <Reference Include="ReactiveUI.WPF, Version=11.3.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\ReactiveUI.WPF.11.3.7\lib\net461\ReactiveUI.WPF.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="ReactiveUI.WPF, Version=11.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ReactiveUI.WPF.11.3.8\lib\net461\ReactiveUI.WPF.dll</HintPath>
     </Reference>
     <Reference Include="Sentry, Version=2.1.1.0, Culture=neutral, PublicKeyToken=fba2ec45388e2af0">
       <HintPath>..\packages\Sentry.2.1.1\lib\net461\Sentry.dll</HintPath>
@@ -161,6 +162,7 @@
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Transactions" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
       <Private>True</Private>

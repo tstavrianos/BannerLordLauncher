@@ -1,38 +1,39 @@
-﻿using System;
-
-namespace BannerLordLauncher
+﻿namespace BannerLordLauncher
 {
+    using System;
     using System.Diagnostics;
-    using System.IO;
-
+    using System.Threading.Tasks;
+    using Alphaleonis.Win32.Filesystem;
     using Newtonsoft.Json;
-
     using Sentry;
 
     public static class Program
     {
+        internal static AppConfig Configuration;
+
+        internal static string ConfigurationFilePath;
         [STAThread]
         public static void Main(string[] args)
         {
-            var configurationFilePath = Path.Combine(GetApplicationRoot(), "configuration.json");
-            AppConfig config = null;
+            ConfigurationFilePath = Path.Combine(GetApplicationRoot(), "configuration.json");
+            Configuration = null;
             try
             {
-                if (File.Exists(configurationFilePath))
+                if (File.Exists(ConfigurationFilePath))
                 {
-                    config =
-                        JsonConvert.DeserializeObject<AppConfig>(File.ReadAllText(configurationFilePath));
+                    Configuration =
+                        JsonConvert.DeserializeObject<AppConfig>(File.ReadAllText(ConfigurationFilePath));
                 }
             }
             catch
             {
-                config = null;
+                Configuration = null;
             }
 
             var submit = true;
-            if (config?.Version != null)
+            if (Configuration?.Version != null)
             {
-                submit = config.SubmitCrashLogs;
+                submit = Configuration.SubmitCrashLogs;
             }
 
             if (submit)

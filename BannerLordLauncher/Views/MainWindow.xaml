@@ -10,7 +10,7 @@
         xmlns:dd="urn:gong-wpf-dragdrop"
         xmlns:viewModels="clr-namespace:BannerLordLauncher.ViewModels"
         mc:Ignorable="d"
-        Title="BannerLord Mod Launcher" Height="730" Width="604" d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}" ResizeMode="CanResize" Icon="/ML.ico" MinWidth="842" MinHeight="501" WindowStyle="SingleBorderWindow">
+        Title="BannerLord Mod Launcher" Height="730" Width="604" d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}" ResizeMode="CanResize" Icon="/ML.ico" MinWidth="842" MinHeight="501" WindowStyle="SingleBorderWindow" Activated="OnActivated">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="32" ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}" />
     </WindowChrome.WindowChrome>
