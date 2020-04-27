@@ -112,6 +112,7 @@ namespace BannerLord.Common
             errorMessage = default;
             if (!this._client.CanRun(gameExe, extraGameArguments)) return false;
 
+            gameExe ??= "Bannerlord.exe";
             var actualGameExe = Path.Combine(this.GameExeFolder, gameExe);
             if (string.IsNullOrEmpty(actualGameExe))
             {
@@ -148,6 +149,7 @@ namespace BannerLord.Common
                     //
                 }
 
+            extraGameArguments ??= "";
             var args = extraGameArguments.Trim() + " " + this.GameArguments().Trim();
             this.Log().Warn($"Trying to execute: {actualGameExe} {args}");
             var info = new ProcessStartInfo

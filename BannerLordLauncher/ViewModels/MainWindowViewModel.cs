@@ -227,7 +227,7 @@ namespace BannerLordLauncher.ViewModels
 
         private void RunCmd()
         {
-            if (!this.Manager.Run(this._window.Configuration.GameExeId == 1 ? "Bannerlord_Native.exe" : "Bannerlord.exe", this._window.Configuration.ExtraGameArguments, out var error))
+            if (!this.Manager.Run(this._window.Configuration.GameExeId == 1 ? "Bannerlord.Native.exe" : "Bannerlord.exe", this._window.Configuration.ExtraGameArguments, out var error))
             {
                 if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
                 return;

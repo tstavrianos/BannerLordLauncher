@@ -64,7 +64,7 @@
         <TextBlock Grid.Column="0" Grid.Row="6" Text="Game exe to use" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14"/>
         <ComboBox Grid.Column="1" Grid.Row="6" Style="{StaticResource SimpleComboBox}" SelectedIndex="{Binding Path=Config.GameExeId}" Margin="0,0,5,0" Foreground="{DynamicResource ModListItemNative}" Background="{DynamicResource StackPanelBackground1}" BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}">
             <ComboBoxItem Style="{StaticResource SimpleComboBoxItem}">BannerLord.exe</ComboBoxItem>
-            <ComboBoxItem Style="{StaticResource SimpleComboBoxItem}" Background="{DynamicResource StackPanelBackground1}" BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}">BannerLord_Native.exe</ComboBoxItem>
+            <ComboBoxItem Style="{StaticResource SimpleComboBoxItem}">BannerLord.Native.exe</ComboBoxItem>
         </ComboBox>
 
         <TextBlock Grid.Column="0" Grid.Row="8" Text="Check for updates at startup" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14"/>
