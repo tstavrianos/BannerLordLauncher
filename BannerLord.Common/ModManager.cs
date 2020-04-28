@@ -1,26 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using BannerLord.Common.Xml;
+using Medallion.Collections;
+using Mono.Cecil;
+using Splat;
+using Trinet.Core.IO.Ntfs;
+using Directory = Alphaleonis.Win32.Filesystem.Directory;
+using File = Alphaleonis.Win32.Filesystem.File;
+using Path = Alphaleonis.Win32.Filesystem.Path;
+
 namespace BannerLord.Common
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
-
-    using BannerLord.Common.Xml;
-
-    using Medallion.Collections;
-
-    using Mono.Cecil;
-
-    using Splat;
-
-    using Trinet.Core.IO.Ntfs;
-
-    using Directory = Alphaleonis.Win32.Filesystem.Directory;
-    using File = Alphaleonis.Win32.Filesystem.File;
-    using Path = Alphaleonis.Win32.Filesystem.Path;
-
     public sealed class ModManager : IModManager
     {
         private readonly IModManagerClient _client;
@@ -91,7 +85,7 @@ namespace BannerLord.Common
                     }
 
                     modules.Remove(module);
-                    var modEntry = new ModEntry { Module = module, UserModData = mod };
+                    var modEntry = new ModEntry {Module = module, UserModData = mod};
                     this.Mods.Add(modEntry);
                     if (modEntry.Module.Official) modEntry.IsChecked = true;
                 }
@@ -99,7 +93,7 @@ namespace BannerLord.Common
             foreach (var module in modules)
             {
                 if (this.Mods.Any(x => x.Module.Id.Equals(module.Id, StringComparison.OrdinalIgnoreCase))) continue;
-                var modEntry = new ModEntry { Module = module, UserModData = new UserModData(module.Id, false) };
+                var modEntry = new ModEntry {Module = module, UserModData = new UserModData(module.Id, false)};
                 this.Mods.Add(modEntry);
                 if (modEntry.Module.Official) modEntry.IsChecked = true;
             }
@@ -133,10 +127,9 @@ namespace BannerLord.Common
             }
 
             foreach (var dll in this.GetAssemblies().Distinct())
-            {
                 try
                 {
-                    var fi = new System.IO.FileInfo(dll);
+                    var fi = new FileInfo(dll);
                     if (!fi.Exists) continue;
                     try
                     {
@@ -153,7 +146,6 @@ namespace BannerLord.Common
                 {
                     //
                 }
-            }
 
             extraGameArguments ??= "";
             var args = extraGameArguments.Trim() + " " + this.GameArguments().Trim();
@@ -367,8 +359,8 @@ namespace BannerLord.Common
         private string EnabledMods()
         {
             return "_MODULES_" + string.Join(
-                       "",
-                       this.Mods.Where(x => x.UserModData.IsSelected).Select(x => "*" + x.Module.Id)) + "*_MODULES_";
+                "",
+                this.Mods.Where(x => x.UserModData.IsSelected).Select(x => "*" + x.Module.Id)) + "*_MODULES_";
         }
 
         private string GameArguments()
@@ -404,16 +396,16 @@ namespace BannerLord.Common
                 newFile = Path.Combine(path, Path.GetFileName(newFile));
             }
 
-            if (i <= 999)
-                try
-                {
-                    Debug.Assert(file != null, nameof(file) + " != null");
-                    File.Move(file, newFile);
-                }
-                catch (Exception e)
-                {
-                    this.Log().Error(e);
-                }
+            if (i > 999) return;
+            try
+            {
+                Debug.Assert(file != null, nameof(file) + " != null");
+                File.Move(file, newFile);
+            }
+            catch (Exception e)
+            {
+                this.Log().Error(e);
+            }
         }
 
         private IEnumerable<string> GetAssemblies(ModEntry module)
@@ -429,7 +421,7 @@ namespace BannerLord.Common
                     if (File.Exists(file)) yield return file;
                 }
 
-                if (!string.IsNullOrEmpty(subModule.DLLName))
+                if (string.IsNullOrEmpty(subModule.DLLName)) continue;
                 {
                     var file = Path.Combine(path, subModule.DLLName);
                     if (File.Exists(file)) yield return file;
@@ -444,7 +436,7 @@ namespace BannerLord.Common
                     if (File.Exists(file)) yield return file;
                 }
 
-                if (!string.IsNullOrEmpty(subModule.DLLName))
+                if (string.IsNullOrEmpty(subModule.DLLName)) continue;
                 {
                     var file = Path.Combine(path, subModule.DLLName);
                     if (File.Exists(file)) yield return file;
@@ -455,8 +447,10 @@ namespace BannerLord.Common
         private IEnumerable<string> GetAssemblies()
         {
             foreach (var module in this.Mods.Where(x => x.IsChecked))
+            {
                 foreach (var a in this.GetAssemblies(module))
                     yield return a;
+            }
         }
 
         public void Validate()
@@ -484,7 +478,7 @@ namespace BannerLord.Common
                         {
                             isDown = true;
                             found.LoadOrderConflicts.Add(
-                                new LoadOrderConflict { IsUp = true, DependsOn = modEntry.Module.Id, Optional = false });
+                                new LoadOrderConflict {IsUp = true, DependsOn = modEntry.Module.Id, Optional = false});
                         }
                     }
 
@@ -499,6 +493,7 @@ namespace BannerLord.Common
                     };
                     modEntry.LoadOrderConflicts.Add(conflict);
                 }
+
                 foreach (var dependsOn in modEntry.Module.OptionalDependModules)
                 {
                     var found = this.Mods.FirstOrDefault(x => x.Module.Id == dependsOn && x.UserModData.IsSelected);
@@ -511,7 +506,7 @@ namespace BannerLord.Common
                         {
                             isDown = true;
                             found.LoadOrderConflicts.Add(
-                                new LoadOrderConflict { IsUp = true, DependsOn = modEntry.Module.Id, Optional = true });
+                                new LoadOrderConflict {IsUp = true, DependsOn = modEntry.Module.Id, Optional = true});
                         }
                     }
 
