@@ -3,6 +3,8 @@
                     xmlns:controls="clr-namespace:BannerLordLauncher.Controls"
                     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                     xmlns:local="clr-namespace:BannerLordLauncher"
+                    xmlns:views="clr-namespace:BannerLordLauncher.Views"
+                    xmlns:gif="http://wpfanimatedgif.codeplex.com"
                     xmlns:common="clr-namespace:BannerLord.Common;assembly=BannerLord.Common">
     <controls:BoolToVisibleOrHidden x:Key="BoolToVisConverter" Collapse="True" Reverse="False" />
     <controls:BoolToVisibleOrHidden x:Key="BoolToVisConverterInv" Collapse="True" Reverse="True" />
@@ -208,11 +210,28 @@
             <CheckBox Focusable="False" Grid.Column="0" IsChecked="{Binding IsChecked}" VerticalAlignment="Center" Visibility="{Binding IsCheckboxEnabled, Converter={StaticResource BoolToVisConverter}}" BorderThickness="0" Style="{StaticResource ModListCheckbox}"/>
             <iconPacks:PackIconRPGAwesome  Grid.Column="0" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemNative}" Kind="CrossedSwords" Visibility="{Binding Module.Official, Converter={StaticResource BoolToVisConverter}}" ToolTip="Official mod"/>
             <TextBlock Focusable="False" Grid.Column="1" Text="{Binding DisplayName}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="/Assets/Fonts/#Candara" FontSize="15" VerticalAlignment="Center"/>
-            <TextBlock Focusable="False" Grid.Column="2" Text="{Binding Module.Version}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="Consolas" FontSize="15" VerticalAlignment="Center"/>
+            <TextBlock Focusable="False" Grid.Column="2" Text="{Binding Module.Version.AsString}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="Consolas" FontSize="15" VerticalAlignment="Center"/>
             <iconPacks:PackIconMaterial Grid.Column="3" Width="16" Height="16" Focusable="False" Background="Transparent" Foreground="{StaticResource ModListItemCommunity}" Kind="AlertCircleOutline" Visibility="{Binding HasConflicts, Converter={StaticResource BoolToVisConverter}}" ToolTip="{Binding Conflicts}"/>
         </Grid>
     </DataTemplate>
 
+    <DataTemplate x:Key="OptionListEntry" DataType="views:SortingModel">
+        <Grid x:Name="OptionListEntryGrid" Margin="0" Background="Transparent" ToolTip="{Binding Tip}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="16" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Focusable="False" Grid.Column="0" Text="{Binding Name}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="/Assets/Fonts/#Candara" FontSize="15" VerticalAlignment="Center"/>
+            <CheckBox Focusable="False" Grid.Column="2" IsChecked="{Binding Ascending}" VerticalAlignment="Center" BorderThickness="0" Style="{StaticResource ModListCheckbox}"/>
+            <TextBlock Focusable="False" Grid.Column="3" Text="{Binding AscendingName}" Margin="5,0" Foreground="{StaticResource ModListItemCommunity}" FontFamily="/Assets/Fonts/#Candara" FontSize="15" VerticalAlignment="Center"/>
+        </Grid>
+    </DataTemplate>
+    
     <Style TargetType="Button" x:Key="MsgButton">
         <Setter Property="Margin" Value="6" />
         <Setter Property="Background" Value="{StaticResource PackIconMaterialBackground1}" />
@@ -438,7 +457,7 @@
     <ImageBrush x:Key="Button4_PressedBrush" ImageSource="/BannerLordLauncher;component/Assets/window_hover.png"/>
     <ImageBrush x:Key="Button4_MouseOverBrush" ImageSource="/BannerLordLauncher;component/Assets/window_hover.png"/>
     <Style x:Key="Button4" TargetType="{x:Type Button}" BasedOn="{x:Null}">
-        <Setter Property="Background" Value="{StaticResource Button4_NormalBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Template">
@@ -446,29 +465,33 @@
                 <ControlTemplate TargetType="{x:Type Button}">
                     
                     <!-- We use Grid as a root because it is easy to add more elements to customize the button -->
-                    <Grid x:Name="Grid">
-                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"/>
-                        
-                        <!-- Content Presenter is where the text content etc is placed by the control -->
-                        <!-- The bindings are useful so that the control can be parameterized without editing the template -->
-                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True"/>
+                    <Grid x:Name="Grid" Background="{TemplateBinding Background}" HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="61"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="46"/>
+                        </Grid.RowDefinitions>
+                        <Image x:Name="animation" Grid.Column="0" Grid.Row="0" gif:ImageBehavior.AnimatedSource="/Assets/test_anim.gif" Width="61" Height="46" Visibility="Hidden"/>
+                        <Image x:Name="normal" Grid.Column="0" Grid.Row="0" Source="/Assets/test_anim.gif" Width="61" Height="46" Visibility="Visible"/>
+                        <TextBlock x:Name="TextBlock" Grid.Column="1" Grid.Row="0" Foreground="{TemplateBinding Foreground}" Background="Transparent" Text="PLAY" Visibility="Hidden" FontFamily="{TemplateBinding FontFamily}" FontSize="{TemplateBinding FontSize}" VerticalAlignment="Center"/>
                     </Grid>
                     
                     <!--Each state sets a brush on the Border in the template -->
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter Property="Background" Value="{StaticResource Button4_MouseOverBrush}" TargetName="Border"/>
-                            <Setter Property="Foreground" Value="#b3a795"/>
+                            <Setter Property="Visibility" Value="Visible" TargetName="TextBlock" />
+                            <Setter Property="Visibility" Value="Visible" TargetName="animation" />
+                            <Setter Property="Visibility" Value="Hidden" TargetName="normal" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
-                            <Setter Property="Background" Value="{StaticResource Button4_PressedBrush}" TargetName="Border"/>
-                            <Setter Property="Foreground" Value="#7c7469"/>
+                            <Setter Property="Visibility" Value="Visible" TargetName="TextBlock" />
+                            <Setter Property="Visibility" Value="Visible" TargetName="animation" />
+                            <Setter Property="Visibility" Value="Hidden" TargetName="normal" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="true"/>
-                        <Trigger Property="IsEnabled" Value="false">
-                            <Setter Property="Background" Value="{StaticResource Button4_PressedBrush}" TargetName="Border"/>
-                            <Setter Property="Foreground" Value="#7c7469"/>
-                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="false"/>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

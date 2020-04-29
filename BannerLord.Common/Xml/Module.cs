@@ -11,7 +11,7 @@ namespace BannerLord.Common.Xml
         public string DirectoryName { get; set; }
         public string Name { get; set; }
         public string Id { get; set; }
-        public string Version { get; set; }
+        public ModuleVersion Version { get; set; }
         public bool Official { get; set; }
         public bool DefaultModule { get; set; }
         public bool SingleplayerModule { get; set; }
@@ -27,6 +27,7 @@ namespace BannerLord.Common.Xml
             this.SubModules = new List<SubModule>();
             this.DelayedSubModules = new List<SubModule>();
             this.OptionalDependModules = new List<string>();
+            this.Version = ModuleVersion.Empty;
         }
 
         public static Module Load(ModManager manager, string directoryName, string gamePath)
@@ -63,7 +64,17 @@ namespace BannerLord.Common.Xml
                     if (string.IsNullOrEmpty(ret.Id)) manager.Log().Error($"Invalid module id in {file}");
                     return null;
                 }
-                ret.Version = module.SelectSingleNode("Version")?.Attributes["value"]?.InnerText;
+
+                try
+                {
+                    ret.Version = ModuleVersion.FromString(module.SelectSingleNode("Version")?.Attributes["value"]?.InnerText);
+                }
+                catch (Exception e)
+                {
+                    manager.Log().Error(e, $"Version parsing issue in {file}");
+                    ret.Version = ModuleVersion.Empty;
+                }
+
                 ret.Official = string.Equals(module.SelectSingleNode("Official")?.Attributes["value"]?.InnerText, "true", StringComparison.OrdinalIgnoreCase);
                 ret.DefaultModule = string.Equals(module.SelectSingleNode("DefaultModule")?.Attributes["value"]?.InnerText, "true", StringComparison.OrdinalIgnoreCase);
                 ret.SingleplayerModule = string.Equals(module.SelectSingleNode("SingleplayerModule")?.Attributes["value"]?.InnerText, "true", StringComparison.OrdinalIgnoreCase);

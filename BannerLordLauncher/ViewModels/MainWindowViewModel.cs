@@ -5,11 +5,8 @@ using System.Windows.Input;
 using BannerLord.Common;
 using BannerLordLauncher.Views;
 using ReactiveUI;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
-using System.Windows.Controls;
-using GongSolutions.Wpf.DragDrop;
 using System.Linq;
 using Splat;
 using Octokit;
@@ -20,13 +17,11 @@ namespace BannerLordLauncher.ViewModels
 {
     using BannerLordLauncher.Controls.MessageBox;
 
-    public sealed class MainWindowViewModel : ViewModelBase, IDropTarget, IModManagerClient
+    public sealed class MainWindowViewModel : ViewModelBase, IModManagerClient
     {
         public ModManager Manager { get; }
         private readonly MainWindow _window;
         private int _selectedIndex = -1;
-
-        private bool _ignoredWarning;
 
         public int SelectedIndex
         {
@@ -39,8 +34,6 @@ namespace BannerLordLauncher.ViewModels
         public ICommand Config { get; }
         public ICommand Run { get; }
         public ICommand Save { get; }
-        //public ICommand AlphaSort { get; }
-        //public ICommand ReverseOrder { get; }
         public ICommand Sort { get; }
         public ICommand MoveToTop { get; }
         public ICommand MoveUp { get; }
@@ -50,6 +43,7 @@ namespace BannerLordLauncher.ViewModels
         public ICommand UncheckAll { get; }
         public ICommand InvertCheck { get; }
         public ICommand Copy { get; }
+        public ICommand CopyChecked { get; }
 
         private string _windowTitle;
         public string WindowTitle
@@ -62,7 +56,6 @@ namespace BannerLordLauncher.ViewModels
 
         public MainWindowViewModel(MainWindow window)
         {
-            this._ignoredWarning = true;
             this._window = window;
             this.Manager = new ModManager(this);
 
@@ -80,10 +73,11 @@ namespace BannerLordLauncher.ViewModels
             this.InvertCheck = ReactiveCommand.Create(this.InvertCheckCmd);
             this.Run = ReactiveCommand.Create(this.RunCmd);
             this.Config = ReactiveCommand.Create(this.OpenConfigCmd);
-            this.Copy = ReactiveCommand.Create(() => Clipboard.SetText(string.Join(Environment.NewLine, this.Manager.Mods.Where(x => x.UserModData.IsSelected).Select(x => x.Module.Id))));
+            this.Copy = ReactiveCommand.Create(() => Clipboard.SetText(string.Join(Environment.NewLine, this.Manager.Mods.Select(x => x.Module.Id))));
+            this.CopyChecked = ReactiveCommand.Create(() => Clipboard.SetText(string.Join(Environment.NewLine, this.Manager.Mods.Where(x => x.UserModData.IsSelected).Select(x => x.Module.Id))));
         }
 
-        private void SafeMessage(string message)
+        private static void SafeMessage(string message)
         {
             Debug.Assert(Application.Current.Dispatcher != null, "Application.Current.Dispatcher != null");
             if (Application.Current.Dispatcher.CheckAccess())
@@ -110,7 +104,7 @@ namespace BannerLordLauncher.ViewModels
                 var latestReleaseVersion = new Version(latestRelease.TagName);
                 if (latestReleaseVersion <= currentVersion) return;
                 var message = $"Version {latestReleaseVersion} is available to download";
-                this.SafeMessage(message);
+                SafeMessage(message);
             }
             catch (Exception e)
             {
@@ -121,17 +115,17 @@ namespace BannerLordLauncher.ViewModels
         private void CheckAllCmd()
         {
             if (this.Manager.CheckAll(out var error)) return;
-            if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
+            if (!string.IsNullOrEmpty(error)) SafeMessage(error);
         }
         private void UncheckAllCmd()
         {
             if (this.Manager.UncheckAll(out var error)) return;
-            if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
+            if (!string.IsNullOrEmpty(error)) SafeMessage(error);
         }
         private void InvertCheckCmd()
         {
             if (this.Manager.InvertCheck(out var error)) return;
-            if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
+            if (!string.IsNullOrEmpty(error)) SafeMessage(error);
         }
 
         private void SortCmd()
@@ -141,10 +135,49 @@ namespace BannerLordLauncher.ViewModels
             if (idx != -1)
                 it = this.Manager.Mods[idx];
             this._window.ModList.SelectedIndex = -1;
+
+            if(Program.Configuration.Sorting != null && Program.Configuration.Sorting.Count > 0){
+                var mods = this.Manager.Mods.ToArray();
+                this.Manager.Mods.Clear();
+
+                var sorted = mods.OrderBy(x => 0);
+                foreach (var sorting in Program.Configuration.Sorting)
+                {
+                    switch (sorting.Type)
+                    {
+                        case SortType.Id:
+                            sorted = sorting.Ascending ? sorted.ThenBy(x => x.Module.Id) : sorted.ThenByDescending(x => x.Module.Id);
+                            break;
+                        case SortType.Name:
+                            sorted = sorting.Ascending ? sorted.ThenBy(x => x.Module.Name) : sorted.ThenByDescending(x => x.Module.Name);
+                            break;
+                        case SortType.Version:
+                            sorted = sorting.Ascending ? sorted.ThenBy(x => x.Module.Version) : sorted.ThenByDescending(x => x.Module.Version);
+                            break;
+                        case SortType.Official:
+                            sorted = sorting.Ascending ? sorted.ThenBy(x => x.Module.Official ? 0 : 1) : sorted.ThenBy(x => x.Module.Official ? 1 : 0);
+                            break;
+                        case SortType.Native:
+                            sorted = sorting.Ascending ? sorted.ThenBy(x => x.Module.Id == "Native" ? 0 : 1) : sorted.ThenBy(x => x.Module.Id == "Native" ? 1 : 0);
+                            break;
+                        case SortType.Selected:
+                            sorted = sorting.Ascending ? sorted.ThenBy(x => x.UserModData.IsSelected ? 0 : 1) : sorted.ThenBy(x => x.UserModData.IsSelected ? 1 : 0);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+
+                foreach (var m in sorted)
+                {
+                    this.Manager.Mods.Add(m);
+                }
+            }
+
             if (!this.Manager.Sort(out var errorMessage))
             {
                 this._window.ModList.SelectedIndex = idx;
-                if (!string.IsNullOrEmpty(errorMessage)) this.SafeMessage(errorMessage);
+                if (!string.IsNullOrEmpty(errorMessage)) SafeMessage(errorMessage);
                 return;
             }
             if (idx != -1) this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
@@ -158,7 +191,7 @@ namespace BannerLordLauncher.ViewModels
             if (!this.Manager.MoveToTop(idx, out var errorMessage))
             {
                 this._window.ModList.SelectedIndex = idx;
-                if (!string.IsNullOrEmpty(errorMessage)) this.SafeMessage(errorMessage);
+                if (!string.IsNullOrEmpty(errorMessage)) SafeMessage(errorMessage);
                 return;
             }
             this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
@@ -172,7 +205,7 @@ namespace BannerLordLauncher.ViewModels
             if (!this.Manager.MoveUp(idx, out var errorMessage))
             {
                 this._window.ModList.SelectedIndex = idx;
-                if (!string.IsNullOrEmpty(errorMessage)) this.SafeMessage(errorMessage);
+                if (!string.IsNullOrEmpty(errorMessage)) SafeMessage(errorMessage);
                 return;
             }
             this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
@@ -186,7 +219,7 @@ namespace BannerLordLauncher.ViewModels
             if (!this.Manager.MoveDown(idx, out var errorMessage))
             {
                 this._window.ModList.SelectedIndex = idx;
-                if (!string.IsNullOrEmpty(errorMessage)) this.SafeMessage(errorMessage);
+                if (!string.IsNullOrEmpty(errorMessage)) SafeMessage(errorMessage);
                 return;
             }
             this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
@@ -200,7 +233,7 @@ namespace BannerLordLauncher.ViewModels
             if (!this.Manager.MoveToBottom(idx, out var errorMessage))
             {
                 this._window.ModList.SelectedIndex = idx;
-                if (!string.IsNullOrEmpty(errorMessage)) this.SafeMessage(errorMessage);
+                if (!string.IsNullOrEmpty(errorMessage)) SafeMessage(errorMessage);
                 return;
             }
             this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(it);
@@ -210,7 +243,7 @@ namespace BannerLordLauncher.ViewModels
         {
             if (!this.Manager.Initialize(Program.Configuration.ConfigPath, Program.Configuration.GamePath, out var error))
             {
-                if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
+                if (!string.IsNullOrEmpty(error)) SafeMessage(error);
             }
 
             if (Program.Configuration.CheckForUpdates) this.CheckForUpdates();
@@ -220,7 +253,7 @@ namespace BannerLordLauncher.ViewModels
         {
             if (!this.Manager.Run(Program.Configuration.GameExeId == 1 ? "Bannerlord.Native.exe" : "Bannerlord.exe", Program.Configuration.ExtraGameArguments, out var error))
             {
-                if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
+                if (!string.IsNullOrEmpty(error)) SafeMessage(error);
                 return;
             }
 
@@ -232,60 +265,16 @@ namespace BannerLordLauncher.ViewModels
 
             if (!this.Manager.Save(out var error))
             {
-                if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
+                if (!string.IsNullOrEmpty(error)) SafeMessage(error);
             }
-            this.SafeMessage("Saved successfully");
+            SafeMessage("Saved successfully");
         }
 
         private void OpenConfigCmd()
         {
 
             if (this.Manager.OpenConfig(out var error)) return;
-            if (!string.IsNullOrEmpty(error)) this.SafeMessage(error);
-        }
-
-        public void DragOver(IDropInfo dropInfo)
-        {
-            var sourceItem = dropInfo.Data as ModEntry;
-            var targetItem = dropInfo.TargetItem as ModEntry;
-
-            if (sourceItem == null || targetItem == null) return;
-            dropInfo.Effects = DragDropEffects.Move;
-            dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
-        }
-
-        public void Drop(IDropInfo dropInfo)
-        {
-            if (dropInfo?.DragInfo == null)
-            {
-                return;
-            }
-
-            var insertIndex = dropInfo.UnfilteredInsertIndex;
-            if (dropInfo.VisualTarget is ItemsControl itemsControl)
-            {
-                if (itemsControl.Items is IEditableCollectionView editableItems)
-                {
-                    var newItemPlaceholderPosition = editableItems.NewItemPlaceholderPosition;
-                    switch (newItemPlaceholderPosition)
-                    {
-                        case NewItemPlaceholderPosition.AtBeginning when insertIndex == 0:
-                            ++insertIndex;
-                            break;
-                        case NewItemPlaceholderPosition.AtEnd when insertIndex == itemsControl.Items.Count:
-                            --insertIndex;
-                            break;
-                    }
-                }
-            }
-            var sourceItem = dropInfo.Data as ModEntry;
-            var index = this.Manager.Mods.IndexOf(sourceItem);
-            if (index < insertIndex) insertIndex--;
-            this._window.ModList.SelectedIndex = -1;
-            this.Manager.Mods.Remove(sourceItem);
-            this.Manager.Mods.Insert(insertIndex, sourceItem);
-            this._window.ModList.SelectedIndex = this.Manager.Mods.IndexOf(sourceItem);
-            this.Manager.Validate();
+            if (!string.IsNullOrEmpty(error)) SafeMessage(error);
         }
 
         public bool CanInitialize(string configPath, string gamePath)
@@ -295,14 +284,13 @@ namespace BannerLordLauncher.ViewModels
 
         public bool CanRun(string gameExe, string extraGameArguments)
         {
-            if (this._ignoredWarning && this.Manager.Mods.Any(x => x.HasConflicts) && Program.Configuration.WarnOnConflict)
+            if (this.Manager.Mods.Any(x => x.HasConflicts) && Program.Configuration.WarnOnConflict)
             {
                 if (MyMessageBox.Show(
                         this._window,
                         "Your mod list has existing conflicts, are you sure that you want to run the game?",
                         "Warning",
                         MessageBoxButton.YesNo
-                        //, MessageBoxImage.Warning
                         ) == MessageBoxResult.No)
                 {
                     return false;
@@ -322,7 +310,7 @@ namespace BannerLordLauncher.ViewModels
                 {
                     if (!UacUtil.IsElevated)
                     {
-                        this.SafeMessage("The application must be run as admin, to allow launching the game");
+                        SafeMessage("The application must be run as admin, to allow launching the game");
                         return false;
                     }
                 }
@@ -338,25 +326,14 @@ namespace BannerLordLauncher.ViewModels
 
         public bool CanSave()
         {
-            this._ignoredWarning = false;
             if (!this.Manager.Mods.Any(x => x.HasConflicts)) return true;
-            if (Program.Configuration.WarnOnConflict)
-            {
-                if (MyMessageBox.Show(
-                        this._window,
-                        "Your mod list has existing conflicts, are you sure that you want to save it?",
-                        "Warning",
-                        MessageBoxButton.YesNo
-                    //, MessageBoxImage.Warning
-                    ) == MessageBoxResult.No)
-                {
-                    return false;
-                }
-            }
-
-            this._ignoredWarning = true;
-
-            return true;
+            if (!Program.Configuration.WarnOnConflict) return true;
+            return MyMessageBox.Show(
+                this._window,
+                "Your mod list has existing conflicts, are you sure that you want to save it?",
+                "Warning",
+                MessageBoxButton.YesNo
+            ) != MessageBoxResult.No;
         }
 
         public bool CanMoveToTop(int idx)

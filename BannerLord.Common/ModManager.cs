@@ -2,16 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using BannerLord.Common.Xml;
 using Medallion.Collections;
 using Mono.Cecil;
 using Splat;
 using Trinet.Core.IO.Ntfs;
-using Directory = Alphaleonis.Win32.Filesystem.Directory;
-using File = Alphaleonis.Win32.Filesystem.File;
-using Path = Alphaleonis.Win32.Filesystem.Path;
+using Alphaleonis.Win32.Filesystem;
 
 namespace BannerLord.Common
 {
@@ -23,11 +20,18 @@ namespace BannerLord.Common
 
         private string _modulePath;
 
+        private readonly object _lock = new object();
         private bool _runValidation;
 
         public ModManager(IModManagerClient client)
         {
             this._client = client;
+            this.Mods.CollectionChanged += this.Mods_CollectionChanged;
+        }
+
+        private void Mods_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            this.Validate();
         }
 
         public ObservableCollection<ModEntry> Mods { get; } = new ObservableCollection<ModEntry>();
@@ -69,10 +73,11 @@ namespace BannerLord.Common
                 return false;
             }
 
-            var modules = Directory.EnumerateDirectories(modulesFolder, "*", SearchOption.TopDirectoryOnly)
+            var modules = Directory.EnumerateDirectories(modulesFolder, "*",System.IO.SearchOption.TopDirectoryOnly)
                 .Select(dir => Module.Load(this, Path.GetFileName(dir), game)).Where(module => module != null).ToList();
 
             if (launcherData.SingleplayerData?.ModDatas != null)
+            {
                 foreach (var mod in launcherData.SingleplayerData.ModDatas)
                 {
                     if (this.Mods.Any(x => x.UserModData.Id.Equals(mod.Id, StringComparison.OrdinalIgnoreCase)))
@@ -89,6 +94,7 @@ namespace BannerLord.Common
                     this.Mods.Add(modEntry);
                     if (modEntry.Module.Official) modEntry.IsChecked = true;
                 }
+            }
 
             foreach (var module in modules)
             {
@@ -129,12 +135,12 @@ namespace BannerLord.Common
             foreach (var dll in this.GetAssemblies().Distinct())
                 try
                 {
-                    var fi = new FileInfo(dll);
+                    var fi = new System.IO.FileInfo(dll);
                     if (!fi.Exists) continue;
                     try
                     {
                         if (!fi.AlternateDataStreamExists("Zone.Identifier")) continue;
-                        var s = fi.GetAlternateDataStream("Zone.Identifier", FileMode.Open);
+                        var s = fi.GetAlternateDataStream("Zone.Identifier", System.IO.FileMode.Open);
                         s.Delete();
                     }
                     catch (Exception e)
@@ -332,14 +338,6 @@ namespace BannerLord.Common
             {
                 var mods = this.Mods.ToArray();
                 this.Mods.Clear();
-                /*var sorted = mods
-                    .Select(
-                        x => (x, x.Module.Id.Equals("native", StringComparison.OrdinalIgnoreCase) ? 0 : 1,
-                                 x.Module.Id.Equals("communitypatch", StringComparison.OrdinalIgnoreCase) ? 0 : 1,
-                                 x.Module.Official ? 0 : 1)).OrderBy(x => x.Item2).ThenBy(x => x.Item3)
-                    .ThenBy(x => x.Item4).ThenBy(x => x.x.Module.Name).Select(x => x.x).ToArray();
-
-                var sorted2 = sorted.StableOrderTopologicallyBy(x => x.DependsOn);*/
                 var sorted2 = mods.StableOrderTopologicallyBy(x => x.DependsOn);
                 foreach (var mod in sorted2) this.Mods.Add(mod);
             }
@@ -348,6 +346,7 @@ namespace BannerLord.Common
                 this.Log().Error(e, "TopologicalSort");
                 errorMessage = e.Message;
                 this._runValidation = true;
+                this.Validate();
                 return false;
             }
 
@@ -453,73 +452,84 @@ namespace BannerLord.Common
             }
         }
 
-        public void Validate()
+        private void Validate()
         {
             if (!this._runValidation) return;
-            foreach (var entry in this.Mods)
+            lock (this._lock)
             {
-                if (entry.LoadOrderConflicts == null)
-                    entry.LoadOrderConflicts = new ObservableCollection<LoadOrderConflict>();
-                entry.LoadOrderConflicts.Clear();
-            }
-
-            for (var i = 0; i < this.Mods.Count; i++)
-            {
-                var modEntry = this.Mods[i];
-                foreach (var dependsOn in modEntry.Module.DependedModules)
+                foreach (var entry in this.Mods)
                 {
-                    var found = this.Mods.FirstOrDefault(x => x.Module.Id == dependsOn && x.UserModData.IsSelected);
-                    var isDown = false;
-                    var isMissing = found == null;
-                    if (found != null)
-                    {
-                        var foundIdx = this.Mods.IndexOf(found);
-                        if (foundIdx > i)
-                        {
-                            isDown = true;
-                            found.LoadOrderConflicts.Add(
-                                new LoadOrderConflict {IsUp = true, DependsOn = modEntry.Module.Id, Optional = false});
-                        }
-                    }
-
-                    if (!isDown && !isMissing) continue;
-                    var conflict = new LoadOrderConflict
-                    {
-                        IsUp = false,
-                        IsDown = isDown,
-                        IsMissing = isMissing,
-                        DependsOn = dependsOn,
-                        Optional = false
-                    };
-                    modEntry.LoadOrderConflicts.Add(conflict);
+                    if (entry.LoadOrderConflicts == null)
+                        entry.LoadOrderConflicts = new ObservableCollection<LoadOrderConflict>();
+                    entry.LoadOrderConflicts.Clear();
                 }
 
-                foreach (var dependsOn in modEntry.Module.OptionalDependModules)
+                for (var i = 0; i < this.Mods.Count; i++)
                 {
-                    var found = this.Mods.FirstOrDefault(x => x.Module.Id == dependsOn && x.UserModData.IsSelected);
-                    var isDown = false;
-                    var isMissing = found == null;
-                    if (found != null)
+                    var modEntry = this.Mods[i];
+                    foreach (var dependsOn in modEntry.Module.DependedModules)
                     {
-                        var foundIdx = this.Mods.IndexOf(found);
-                        if (foundIdx > i)
+                        var found = this.Mods.FirstOrDefault(x => x.Module.Id == dependsOn && x.UserModData.IsSelected);
+                        var isDown = false;
+                        var isMissing = found == null;
+                        if (found != null)
                         {
-                            isDown = true;
-                            found.LoadOrderConflicts.Add(
-                                new LoadOrderConflict {IsUp = true, DependsOn = modEntry.Module.Id, Optional = true});
+                            var foundIdx = this.Mods.IndexOf(found);
+                            if (foundIdx > i)
+                            {
+                                isDown = true;
+                                found.LoadOrderConflicts.Add(
+                                    new LoadOrderConflict
+                                        {IsUp = true, DependsOn = modEntry.Module.Id, Optional = false});
+                            }
                         }
+
+                        if (!isDown && !isMissing) continue;
+                        var conflict = new LoadOrderConflict
+                        {
+                            IsUp = false,
+                            IsDown = isDown,
+                            IsMissing = isMissing,
+                            DependsOn = dependsOn,
+                            Optional = false
+                        };
+                        modEntry.LoadOrderConflicts.Add(conflict);
                     }
 
-                    if (!isDown && !isMissing) continue;
-                    var conflict = new LoadOrderConflict
+                    foreach (var dependsOn in modEntry.Module.OptionalDependModules)
                     {
-                        IsUp = false,
-                        IsDown = isDown,
-                        IsMissing = isMissing,
-                        DependsOn = dependsOn,
-                        Optional = true
-                    };
-                    modEntry.LoadOrderConflicts.Add(conflict);
+                        var found = this.Mods.FirstOrDefault(x => x.Module.Id == dependsOn && x.UserModData.IsSelected);
+                        var isDown = false;
+                        var isMissing = found == null;
+                        if (found != null)
+                        {
+                            var foundIdx = this.Mods.IndexOf(found);
+                            if (foundIdx > i)
+                            {
+                                isDown = true;
+                                found.LoadOrderConflicts.Add(
+                                    new LoadOrderConflict
+                                        {IsUp = true, DependsOn = modEntry.Module.Id, Optional = true});
+                            }
+                        }
+
+                        if (!isDown && !isMissing) continue;
+                        var conflict = new LoadOrderConflict
+                        {
+                            IsUp = false,
+                            IsDown = isDown,
+                            IsMissing = isMissing,
+                            DependsOn = dependsOn,
+                            Optional = true
+                        };
+                        modEntry.LoadOrderConflicts.Add(conflict);
+                    }
+                }
+
+                foreach (var entry in this.Mods)
+                {
+                    entry.NotifyChanged("HasConflicts");
+                    entry.NotifyChanged("Conflicts");
                 }
             }
         }

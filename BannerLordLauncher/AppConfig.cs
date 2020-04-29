@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace BannerLordLauncher
 {
@@ -33,9 +36,13 @@ namespace BannerLordLauncher
 
         [JsonProperty("gameExeId")]
         public int GameExeId { get; set; }
+        
+        [JsonProperty("sorting")]
+        public List<Sorting> Sorting { get; set; }
 
         public void CopyFrom(AppConfig other)
         {
+            this.Version = other.Version;
             this.GamePath = other.GamePath;
             this.ConfigPath = other.ConfigPath;
             this.CheckForUpdates = other.CheckForUpdates;
@@ -44,6 +51,41 @@ namespace BannerLordLauncher
             this.WarnOnConflict = other.WarnOnConflict;
             this.ExtraGameArguments = other.ExtraGameArguments;
             this.GameExeId = other.GameExeId;
+            
+            if(this.Sorting == null) this.Sorting = new List<Sorting>();
+            this.Sorting.Clear();
+            if (other.Sorting == null) return;
+            foreach (var s in other.Sorting)
+            {
+                this.Sorting.Add(s.Clone());
+            }
         }
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum SortType
+    {
+        [EnumMember(Value = "id")]
+        Id = 0,
+        [EnumMember(Value = "name")]
+        Name = 1,
+        [EnumMember(Value = "version")]
+        Version = 2,
+        [EnumMember(Value = "official")]
+        Official = 3,
+        [EnumMember(Value = "native")]
+        Native = 4,
+        [EnumMember(Value = "selected")]
+        Selected = 5
+    }
+
+    public class Sorting
+    {
+        [JsonProperty("type")]
+        public SortType Type { get; set; }
+        [JsonProperty("ascending")]
+        public bool Ascending { get; set; }
+
+        public Sorting Clone() => new Sorting{Type = this.Type, Ascending = this.Ascending};
     }
 }

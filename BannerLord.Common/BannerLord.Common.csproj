@@ -89,6 +89,9 @@
     <Compile Include="UacUtil.cs" />
     <Compile Include="Xml\GameType.cs" />
     <Compile Include="Xml\Module.cs" />
+    <Compile Include="Xml\ModuleVersion.cs" />
+    <Compile Include="Xml\ModuleVersionType.cs" />
+    <Compile Include="Xml\ModuleVersionTypeComparer.cs" />
     <Compile Include="Xml\SubModule.cs" />
     <Compile Include="Xml\SubModuleTags.cs" />
     <Compile Include="Xml\UserData.cs" />

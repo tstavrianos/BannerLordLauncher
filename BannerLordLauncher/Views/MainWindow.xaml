@@ -10,7 +10,8 @@
         xmlns:dd="urn:gong-wpf-dragdrop"
         xmlns:viewModels="clr-namespace:BannerLordLauncher.ViewModels"
         mc:Ignorable="d"
-        Title="BannerLord Mod Launcher" Height="730" Width="604" d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}" ResizeMode="CanResize" Icon="/ML.ico" MinWidth="842" MinHeight="501" WindowStyle="SingleBorderWindow" Activated="OnActivated">
+        xmlns:gif="http://wpfanimatedgif.codeplex.com"
+        Title="BannerLord Mod Launcher" Height="730" Width="604" d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}" ResizeMode="CanResize" Icon="/ML.ico" MinWidth="620" MinHeight="501" WindowStyle="SingleBorderWindow" Activated="OnActivated">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="32" ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}" />
     </WindowChrome.WindowChrome>
@@ -131,24 +132,24 @@
                     StrokeThickness="1" />
             </Button>
             <Image Grid.Column="2" Grid.Row="0" Grid.RowSpan="4"
-                   Source="/BannerLordLauncher;component/Assets/banner.png" Width="594" Height="154" HorizontalAlignment="Center" VerticalAlignment="Center" />
-            <Button Style="{StaticResource Button4}" Grid.Column="3" Grid.ColumnSpan="4" Grid.Row="2" Grid.RowSpan="2" Name="Run" Command="{Binding Run}" ClickMode="Release" ToolTip="Run Game" Width="76" Height="105" HorizontalAlignment="Center" VerticalAlignment="Center"></Button>
+                   Source="/BannerLordLauncher;component/Assets/banner.png" Width="356" Height="92" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <Button Style="{StaticResource Button4}" Grid.Column="3" Grid.ColumnSpan="4" Grid.Row="2" Grid.RowSpan="2" Name="Run" Command="{Binding Run}" ClickMode="Release" ToolTip="Run Game" Height="46" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource PackIconMaterialForeground1}" FontFamily="/BannerLordLauncher;component/Assets/Fonts/#Viking-Normal" FontSize="16"/>
         </Grid>
         <StackPanel DockPanel.Dock="Left" Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Center" RenderTransformOrigin="0.534,0.517">
-            <Button Style="{StaticResource Button1}" Name="MoveToTop" Command="{Binding MoveToTop}" ClickMode="Release" ToolTip="Move selection to top" Margin="5,0,5,0">
-                <iconPacks:PackIconMaterial Kind="ChevronDoubleUp" Width="22" Height="22"/>
+            <Button Style="{StaticResource Button1}" Name="MoveToTop" Command="{Binding MoveToTop}" ClickMode="Release" ToolTip="Move selection to top" Margin="5,0,5,0" Width="32" Height="32">
+                <iconPacks:PackIconMaterial Kind="ChevronDoubleUp" Width="16" Height="16"/>
             </Button>
-            <Button Style="{StaticResource Button1}" Name="MoveUp" Command="{Binding MoveUp}" ClickMode="Release" ToolTip="Move selection up"  Margin="5,0,5,1">
-                <iconPacks:PackIconMaterial Kind="ChevronUp" Width="22" Height="22"/>
+            <Button Style="{StaticResource Button1}" Name="MoveUp" Command="{Binding MoveUp}" ClickMode="Release" ToolTip="Move selection up"  Margin="5,0,5,1" Width="32" Height="32">
+                <iconPacks:PackIconMaterial Kind="ChevronUp" Width="16" Height="16"/>
             </Button>
-            <Button Style="{StaticResource Button1}" Name="MoveDown" Command="{Binding MoveDown}" ClickMode="Release" ToolTip="Move selection down"  Margin="5,1,5,0">
-                <iconPacks:PackIconMaterial Kind="ChevronDown" Width="22" Height="22"/>
+            <Button Style="{StaticResource Button1}" Name="MoveDown" Command="{Binding MoveDown}" ClickMode="Release" ToolTip="Move selection down"  Margin="5,1,5,0" Width="32" Height="27">
+                <iconPacks:PackIconMaterial Kind="ChevronDown" Width="16" Height="16"/>
             </Button>
-            <Button Style="{StaticResource Button1}" Name="MoveToBottom" Command="{Binding MoveToBottom}" ClickMode="Release" ToolTip="Move selection to bottom"  Margin="5,0,5,2">
-                <iconPacks:PackIconMaterial Kind="ChevronDoubleDown" Width="22" Height="22"/>
+            <Button Style="{StaticResource Button1}" Name="MoveToBottom" Command="{Binding MoveToBottom}" ClickMode="Release" ToolTip="Move selection to bottom"  Margin="5,0,5,2" Width="32" Height="32">
+                <iconPacks:PackIconMaterial Kind="ChevronDoubleDown" Width="16" Height="16"/>
             </Button>
-            <Button Style="{StaticResource Button1}" Name="Sort" Command="{Binding Sort}" ClickMode="Release" ToolTip="Sort"  Margin="5,2,5,0">
-                <iconPacks:PackIconMaterial Kind="Sort" Width="22" Height="22" />
+            <Button Style="{StaticResource Button1}" Name="Sort" Command="{Binding Sort}" ClickMode="Release" ToolTip="Sort"  Margin="5,2,5,0" Width="32" Height="32">
+                <iconPacks:PackIconMaterial Kind="Sort" Width="16" Height="16" />
             </Button>
         </StackPanel>
         <Grid DockPanel.Dock="Top">
@@ -184,17 +185,19 @@
             SelectedIndex="{Binding SelectedIndex}" 
             Name="ModList" 
             BorderThickness="2,2,2,2" 
-            ScrollViewer.VerticalScrollBarVisibility="Visible" 
             dd:DragDrop.IsDragSource="True" 
             dd:DragDrop.IsDropTarget="True" 
+            dd:DragDrop.DropTargetAdornerBrush="Coral"
+            dd:DragDrop.UseDefaultEffectDataTemplate="True"
+            ScrollViewer.VerticalScrollBarVisibility="Visible" 
             BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" 
-            dd:DragDrop.DropHandler="{Binding}" 
             HorizontalContentAlignment="Stretch" 
             ItemTemplate="{StaticResource ModListEntry }"
             SelectionMode="Single" Background="{DynamicResource StackPanelBackground1}">
             <ListBox.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Copy" Command="{Binding Copy}"/>
+                    <MenuItem Header="Copy Checked" Command="{Binding CopyChecked}"/>
                 </ContextMenu>
             </ListBox.ContextMenu>
             <ListBox.Resources>

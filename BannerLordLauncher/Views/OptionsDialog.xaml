@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BannerLordLauncher.Views"
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        xmlns:dd="urn:gong-wpf-dragdrop"
         mc:Ignorable="d"
         Title="Configuration" ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen" WindowStyle="None" HorizontalAlignment="Center" VerticalAlignment="Center" Width="802" Height="373" BorderBrush="{DynamicResource PackIconMaterialBorderBrush2}" BorderThickness="2"
+        WindowStartupLocation="CenterScreen" WindowStyle="None" HorizontalAlignment="Center" VerticalAlignment="Center" Width="802" Height="508" BorderBrush="{DynamicResource PackIconMaterialBorderBrush2}" BorderThickness="2"
         >
     <Window.Resources>
         <ResourceDictionary>
@@ -42,6 +43,8 @@
             <RowDefinition Height="19"/>
             <RowDefinition Height="19"/>
             <RowDefinition Height="19"/>
+            <RowDefinition Height="19"/>
+            <RowDefinition Height="120"/>
             <RowDefinition Height="19"/>
             <RowDefinition Height="19"/>
             <RowDefinition Height="auto"/>
@@ -79,8 +82,64 @@
         <TextBlock Grid.Column="0" Grid.Row="14" Text="Warn if trying to Run or Save with conflicts" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14"/>
         <CheckBox Grid.Column="1" Grid.Row="14" IsChecked="{Binding Path=Config.WarnOnConflict}" Style="{StaticResource OptionsCheckBox}" Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Top"/>
         
-        <TextBlock Grid.Column="0" Grid.Row="16" Text="* Need to restart the application for the change to take effect" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14"/>
-        <StackPanel Grid.Column="1" Grid.Row="17" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+        <ListBox Grid.Column="0" Grid.Row="16" ItemContainerStyle="{StaticResource ModListContainerEntry}" ItemsSource="{Binding Sorting}"
+                 SelectionMode="Single" Background="{StaticResource StackPanelBackground1}"
+                 BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" 
+                 BorderThickness="2,2,2,2" 
+                 ItemTemplate="{StaticResource OptionListEntry }"
+                 HorizontalContentAlignment="Stretch" 
+                 dd:DragDrop.IsDragSource="True" 
+                 dd:DragDrop.IsDropTarget="True" 
+                 dd:DragDrop.DropTargetAdornerBrush="Coral"
+                 dd:DragDrop.UseDefaultEffectDataTemplate="True"
+                 ToolTip="Available fields to sort with"
+        >
+            <ListBox.Resources>
+                <Style TargetType="{x:Type ScrollBar}">
+                    <Setter Property="SnapsToDevicePixels" Value="True" />
+                    <Setter Property="OverridesDefaultStyle" Value="true" />
+                    <Setter Property="Background" Value="#ff4e3827"/>
+                    <Style.Triggers>
+                        <Trigger Property="Orientation" Value="Vertical">
+                            <Setter Property="Width" Value="18" />
+                            <Setter Property="Height" Value="Auto" />
+                            <Setter Property="Template" Value="{StaticResource VerticalScrollBar}" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListBox.Resources>
+        </ListBox>
+        
+        <ListBox Grid.Column="1" Grid.Row="16" ItemContainerStyle="{StaticResource ModListContainerEntry}" ItemsSource="{Binding Sorting2}"
+            SelectionMode="Single" Background="{StaticResource StackPanelBackground1}"
+            BorderBrush="{DynamicResource PackIconMaterialBorderBrush1}" 
+            BorderThickness="2,2,2,2" 
+            ItemTemplate="{StaticResource OptionListEntry }"
+            dd:DragDrop.IsDragSource="True" 
+            dd:DragDrop.IsDropTarget="True" 
+            HorizontalContentAlignment="Stretch" 
+            dd:DragDrop.DropTargetAdornerBrush="Coral"
+            dd:DragDrop.UseDefaultEffectDataTemplate="True"
+            ToolTip="Fields that will be used when sorting, followed by dependency sorting"
+        >
+            <ListBox.Resources>
+                <Style TargetType="{x:Type ScrollBar}">
+                    <Setter Property="SnapsToDevicePixels" Value="True" />
+                    <Setter Property="OverridesDefaultStyle" Value="true" />
+                    <Setter Property="Background" Value="#ff4e3827"/>
+                    <Style.Triggers>
+                        <Trigger Property="Orientation" Value="Vertical">
+                            <Setter Property="Width" Value="18" />
+                            <Setter Property="Height" Value="Auto" />
+                            <Setter Property="Template" Value="{StaticResource VerticalScrollBar}" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListBox.Resources>
+        </ListBox>
+        
+        <TextBlock Grid.Column="0" Grid.Row="18" Text="* Need to restart the application for the change to take effect" Foreground="{DynamicResource PackIconMaterialForeground1}" FontSize="14"/>
+        <StackPanel Grid.Column="1" Grid.Row="19" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Ok" FontSize="22" Style="{StaticResource Button2}" Click="ButtonBase_OnClickOk">
             </Button>
             <Button Content="Cancel" FontSize="22" Style="{StaticResource Button2}" Click="ButtonBase_OnClickCancel" Margin="0,0,15,0">

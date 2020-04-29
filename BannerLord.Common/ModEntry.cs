@@ -43,6 +43,11 @@ namespace BannerLord.Common
             set => this.RaiseAndSetIfChanged(ref this._module, value);
         }
 
+        public void NotifyChanged(string property)
+        {
+            this.RaisePropertyChanged(property);
+        }
+
         public UserModData UserModData
         {
             get => this._userModData;

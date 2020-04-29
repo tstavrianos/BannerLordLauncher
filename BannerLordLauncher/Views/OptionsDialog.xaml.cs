@@ -1,22 +1,81 @@
 ﻿using System;
 using System.Windows;
+using ReactiveUI;
 
 namespace BannerLordLauncher.Views
 {
     using System.Diagnostics;
+    using System.Linq;
     using Alphaleonis.Win32.Filesystem;
     using System.Windows.Threading;
+    using System.Collections.Generic;
 
     using BannerLordLauncher.Controls.MessageBox;
 
-    using Newtonsoft.Json;
-
     using Ookii.Dialogs.Wpf;
 
-    using Serilog;
-
     using Steam.Common;
+    using System.Collections.ObjectModel;
 
+    public class SortingModel: ReactiveObject
+    {
+        private bool _ascending;
+
+        public bool Ascending
+        {
+            get => this._ascending;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref this._ascending, value);
+                this.RaisePropertyChanged("AscendingName");
+                this.RaisePropertyChanged("Tip");
+            }
+        }
+        
+        public SortingModel() {}
+
+        public string AscendingName => this.Ascending ? "Ascending" : "Descending";
+
+        public SortType Type { get; set; }
+        public string Name {
+            get
+            {
+                switch (this.Type)
+                {
+                    case SortType.Id: return "Id";
+                    case SortType.Name: return "Name";
+                    case SortType.Version: return "Version";
+                    case SortType.Official: return "Official";
+                    case SortType.Native: return "Native";
+                    case SortType.Selected: return "Selected";
+                }
+                return null;
+            }
+        }
+
+        public string Tip
+        {
+            get
+            {
+                switch (this.Type)
+                {
+                    case SortType.Id: return $"Alphabetical by Id, {this.AscendingName}";
+                    case SortType.Name: return $"Alphabetical by Id, {this.AscendingName}";
+                    case SortType.Version: return $"By Version, {this.AscendingName}";
+                    case SortType.Official: return "Official mods, " + (this.Ascending ? "first" : "last");
+                    case SortType.Native: return "Native mod, " + (this.Ascending ? "first" : "last");
+                    case SortType.Selected: return "Selected mods, " + (this.Ascending ? "first" : "last");
+                }
+
+                return string.Empty;
+            }
+        }
+        
+        public override string ToString()
+        {
+            return this.Name;
+        }
+    }
     /// <summary>
     /// Interaction logic for OptionsDialog.xaml
     /// </summary>
@@ -25,6 +84,9 @@ namespace BannerLordLauncher.Views
         public AppConfig Config { get; }
 
         public bool Result { get; private set; }
+        public ObservableCollection<SortingModel> Sorting {get;}
+        public ObservableCollection<SortingModel> Sorting2 {get;}
+
         public OptionsDialog()
         {
             this.Config = new AppConfig();
@@ -67,12 +129,31 @@ namespace BannerLordLauncher.Views
                     SubmitCrashLogs = true,
                     WarnOnConflict = true,
                     ConfigPath = config,
-                    GamePath = game
+                    GamePath = game,
+                    Sorting = new List<Sorting>()
                 };
             }
             this.InitializeComponent();
             this.DataContext = this;
             this.Result = false;
+            this.Sorting = new ObservableCollection<SortingModel>();
+            this.Sorting2 = new ObservableCollection<SortingModel>();
+            this.Sorting.Add(new SortingModel{Type = SortType.Id, Ascending = true});
+            this.Sorting.Add(new SortingModel{Type = SortType.Name, Ascending = true});
+            this.Sorting.Add(new SortingModel{Type = SortType.Native, Ascending = true});
+            this.Sorting.Add(new SortingModel{Type = SortType.Official, Ascending = true});
+            this.Sorting.Add(new SortingModel{Type = SortType.Version, Ascending = true});
+            this.Sorting.Add(new SortingModel{Type = SortType.Selected, Ascending = true});
+
+            if(this.Config.Sorting != null) {
+                foreach(var s in this.Config.Sorting)
+                {
+                    var found = this.Sorting.FirstOrDefault(x => x.Type == s.Type);
+                    if(found == null) continue;
+                    this.Sorting.Remove(found);
+                    this.Sorting2.Add(new SortingModel{Type = s.Type, Ascending = s.Ascending});
+                }
+            }
         }
 
         private static string GetApplicationRoot()
@@ -103,6 +184,11 @@ namespace BannerLordLauncher.Views
 
             if (!ValidConfigFolder(this.Config.ConfigPath) || !ValidGameFolder(this.Config.GamePath)) return;
 
+            this.Config.Sorting.Clear();
+            foreach (var sorting in this.Sorting2)
+            {
+                this.Config.Sorting.Add(new Sorting{Type = sorting.Type, Ascending = sorting.Ascending});
+            }
             this.Result = true;
             this.Close();
         }
